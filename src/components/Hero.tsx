@@ -1,4 +1,5 @@
 import { ArrowDown } from "lucide-react";
+import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 import { DEFAULT_SECTIONS, type SiteSections } from "@/lib/content-types";
 
 type HeroProps = {
@@ -10,12 +11,18 @@ export function Hero({ sections = DEFAULT_SECTIONS }: HeroProps) {
 
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-16 lg:px-8">
+      <HeroBackgroundVideo
+        videoUrl={hero.backgroundVideoUrl}
+        startSeconds={hero.backgroundStartSeconds}
+        endSeconds={hero.backgroundEndSeconds}
+      />
+
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/4 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-white/[0.03] blur-3xl" />
         <div className="absolute right-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-5xl text-center">
+      <div className="relative z-10 mx-auto max-w-5xl text-center">
         <p className="mb-6 text-[11px] tracking-[0.35em] text-white/40 uppercase">
           {hero.eyebrow}
         </p>

@@ -565,6 +565,49 @@ export function AdminDashboard() {
                     />
                   </Field>
                 </div>
+                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+                  <p className="mb-4 text-[11px] tracking-[0.2em] text-white/35 uppercase">
+                    Blurred Background Video
+                  </p>
+                  <div className="grid gap-4">
+                    <Field label="YouTube URL">
+                      <Input
+                        value={sections.hero.backgroundVideoUrl ?? ""}
+                        onChange={(value) => updateHeroSection({ backgroundVideoUrl: value })}
+                        placeholder="https://youtube.com/watch?v=..."
+                      />
+                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Loop Start (seconds)">
+                        <Input
+                          value={String(sections.hero.backgroundStartSeconds ?? 0)}
+                          onChange={(value) =>
+                            updateHeroSection({
+                              backgroundStartSeconds: Number.parseFloat(value) || 0,
+                            })
+                          }
+                          placeholder="0"
+                        />
+                      </Field>
+                      <Field label="Loop End (seconds)">
+                        <Input
+                          value={String(sections.hero.backgroundEndSeconds ?? 0)}
+                          onChange={(value) =>
+                            updateHeroSection({
+                              backgroundEndSeconds: Number.parseFloat(value) || 0,
+                            })
+                          }
+                          placeholder="15"
+                        />
+                      </Field>
+                    </div>
+                    <p className="text-xs leading-relaxed text-white/35">
+                      Paste a YouTube link for a heavily blurred, muted background loop. Set loop
+                      end higher than loop start to repeat only part of the video. Leave loop end
+                      at 0 to replay the full clip.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CopySection>
 

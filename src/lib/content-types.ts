@@ -34,6 +34,9 @@ export type HeroSection = {
   primaryCta: string;
   secondaryCta: string;
   scrollLabel: string;
+  backgroundVideoUrl?: string;
+  backgroundStartSeconds?: number;
+  backgroundEndSeconds?: number;
 };
 
 export type UgcSection = SectionBlock & {
@@ -78,6 +81,9 @@ export const DEFAULT_SECTIONS: SiteSections = {
     primaryCta: "View Work",
     secondaryCta: "Contact Me",
     scrollLabel: "Scroll",
+    backgroundVideoUrl: "",
+    backgroundStartSeconds: 0,
+    backgroundEndSeconds: 0,
   },
   portfolio: {
     eyebrow: "Portfolio",

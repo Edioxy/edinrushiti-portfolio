@@ -1,65 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { loadYouTubeApi, type YouTubePlayerInstance } from "@/lib/youtube-player-api";
 import { getYouTubeIdFromSource, type VideoSource } from "@/lib/video";
-
-type YouTubePlayerInstance = {
-  playVideo: () => void;
-  unMute: () => void;
-  destroy: () => void;
-};
-
-declare global {
-  interface Window {
-    YT?: {
-      Player: new (
-        elementId: string,
-        config: {
-          videoId: string;
-          width?: string | number;
-          height?: string | number;
-          playerVars?: Record<string, string | number>;
-          events?: {
-            onReady?: (event: { target: YouTubePlayerInstance }) => void;
-          };
-        },
-      ) => YouTubePlayerInstance;
-    };
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-let youtubeApiPromise: Promise<void> | null = null;
-
-function loadYouTubeApi() {
-  if (typeof window === "undefined") {
-    return Promise.resolve();
-  }
-
-  if (window.YT?.Player) {
-    return Promise.resolve();
-  }
-
-  if (!youtubeApiPromise) {
-    youtubeApiPromise = new Promise((resolve) => {
-      const previousReady = window.onYouTubeIframeAPIReady;
-
-      window.onYouTubeIframeAPIReady = () => {
-        previousReady?.();
-        resolve();
-      };
-
-      if (!document.getElementById("youtube-iframe-api")) {
-        const script = document.createElement("script");
-        script.id = "youtube-iframe-api";
-        script.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(script);
-      }
-    });
-  }
-
-  return youtubeApiPromise;
-}
 
 type YouTubeEmbedPlayerProps = {
   video: VideoSource;
