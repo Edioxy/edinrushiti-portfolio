@@ -5,6 +5,45 @@
     "youtube": "https://youtube.com/",
     "linkedin": "https://linkedin.com/"
   },
+  "sections": {
+    "siteName": "Edin Rushiti",
+    "headerCta": "Book a Project",
+    "hero": {
+      "eyebrow": "Professional Video Editor & Content Director",
+      "headingLine1": "10+ Years of Crafting",
+      "headingLine2": "High-Impact Visuals",
+      "description": "Premium commercial edits, cinematic storytelling, and scroll-stopping UGC — engineered for brands that demand visual excellence.",
+      "primaryCta": "View Work",
+      "secondaryCta": "Contact Me",
+      "scrollLabel": "Scroll"
+    },
+    "portfolio": {
+      "eyebrow": "Portfolio",
+      "heading": "Commercial & Cinematic Work",
+      "description": "Premium commercial and cinematic edits curated for brand and campaign work."
+    },
+    "ugc": {
+      "eyebrow": "UGC Edits",
+      "heading": "Scroll-Stopping Vertical Content",
+      "description": "Dedicated UGC portfolio in native 9:16 format — optimized for TikTok, Reels, and paid social. Swipe through recent client-ready edits.",
+      "badge": "9:16 Native",
+      "highlights": [
+        "Hook-first pacing for paid social",
+        "Brand-safe captions & on-screen text",
+        "Fast turnaround for campaign batches"
+      ]
+    },
+    "tools": {
+      "eyebrow": "Technical Arsenal",
+      "heading": "Tools & Advanced Pipelines",
+      "description": "From traditional post-production to generative AI workflows — built for commercial speed without sacrificing cinematic quality."
+    },
+    "contact": {
+      "eyebrow": "Contact",
+      "heading": "Let's Build Your Next Visual",
+      "description": "Available for commercial campaigns, UGC batches, and long-form cinematic projects. Share your brief and timeline — I'll respond within 24 hours."
+    }
+  },
   "portfolio": [
     {
       "title": "10 Years Of Video Editing",
@@ -42,10 +81,10 @@
       "thumbnail": ""
     },
     {
-      "title": "Global Ad Spot",
-      "category": "Commercial",
-      "description": "Multi-market commercial with localized variants and brand consistency.",
-      "video": "",
+      "title": "Epsteins True Connections",
+      "category": "YouTube Documentary",
+      "description": "Multi-markeIf there is one family whose name is synonymous with wealth and power, it’s the Rothschilds. ",
+      "video": "https://youtu.be/7eBfevPVRhU?si=J_s8bcjUk2JtXCP-",
       "thumbnail": ""
     }
   ],
@@ -66,24 +105,6 @@
       "title": "Puproot Chews - AI UGC DTC",
       "brand": "Health & Wellness",
       "video": "https://youtube.com/shorts/kcSxuPzaoiY?feature=share",
-      "thumbnail": ""
-    },
-    {
-      "title": "Fashion Try-On Edit",
-      "brand": "Streetwear",
-      "video": "",
-      "thumbnail": ""
-    },
-    {
-      "title": "SaaS Testimonial Cut",
-      "brand": "B2B Software",
-      "video": "",
-      "thumbnail": ""
-    },
-    {
-      "title": "Supplement UGC Stack",
-      "brand": "Nutrition",
-      "video": "",
       "thumbnail": ""
     }
   ]
