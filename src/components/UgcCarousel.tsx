@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { getVideoPreviewSrc } from "@/lib/social-thumbnail";
+import { SocialVideoPreview } from "@/components/SocialVideoPreview";
 import type { UgcVideo } from "@/lib/video";
 import { VideoModal, type VideoPlaylistItem } from "./VideoModal";
 
@@ -13,7 +13,6 @@ type UgcCardProps = {
 
 function UgcCard({ item, onPlay }: UgcCardProps) {
   const hasVideo = Boolean(item.video);
-  const previewSrc = getVideoPreviewSrc(item.thumbnail, item.video);
 
   return (
     <article className="group w-[220px] shrink-0 snap-start sm:w-[260px]">
@@ -26,31 +25,15 @@ function UgcCard({ item, onPlay }: UgcCardProps) {
           aria-label={hasVideo ? `Play ${item.title}` : item.title}
         >
           <div className="relative aspect-[9/16] overflow-hidden bg-[#0a0a0a]">
-            {previewSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewSrc}
-                alt={item.title}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-[#161616] via-[#0a0a0a] to-black">
-                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/[0.04] to-transparent" />
-                <div
-                  className={`relative flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all duration-500 ${
-                    hasVideo
-                      ? "group-hover:scale-110 group-hover:border-white/25"
-                      : "opacity-40"
-                  }`}
-                >
-                  <Play className="ml-0.5 h-5 w-5 fill-white text-white" />
-                </div>
-              </div>
-            )}
+            <SocialVideoPreview
+              title={item.title}
+              thumbnail={item.thumbnail}
+              video={item.video}
+              vertical
+            />
 
             {hasVideo && (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/50 backdrop-blur-sm">
                   <Play className="ml-0.5 h-4 w-4 fill-white text-white" />
                 </div>

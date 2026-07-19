@@ -6,22 +6,6 @@ import {
   type VideoSource,
 } from "@/lib/video";
 
-export function getVideoPreviewSrc(
-  thumbnail: string | undefined,
-  video?: VideoSource,
-  rawVideoUrl?: string,
-) {
-  const manual = thumbnail?.trim();
-  if (manual) return manual;
-
-  const videoUrl = rawVideoUrl?.trim() || video?.href;
-  if (video?.type === "tiktok" && videoUrl) {
-    return `/api/thumbnail?url=${encodeURIComponent(videoUrl)}`;
-  }
-
-  return undefined;
-}
-
 type TikTokOEmbed = {
   thumbnail_url?: string;
 };

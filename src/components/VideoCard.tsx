@@ -1,7 +1,7 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { getVideoPreviewSrc } from "@/lib/social-thumbnail";
+import { SocialVideoPreview } from "@/components/SocialVideoPreview";
 import type { PortfolioVideo } from "@/lib/video";
 
 type VideoCardProps = {
@@ -11,7 +11,8 @@ type VideoCardProps = {
 
 export function VideoCard({ item, onPlay }: VideoCardProps) {
   const hasVideo = Boolean(item.video);
-  const previewSrc = getVideoPreviewSrc(item.thumbnail, item.video);
+  const isVertical =
+    item.video?.type === "tiktok" || item.video?.type === "instagram";
 
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-white/5 bg-[#121212] transition-all duration-500 hover:border-white/15 hover:shadow-[0_24px_80px_-24px_rgba(255,255,255,0.12)]">
@@ -23,14 +24,15 @@ export function VideoCard({ item, onPlay }: VideoCardProps) {
         aria-label={hasVideo ? `Play ${item.title}` : item.title}
       >
         <div className="relative aspect-video overflow-hidden bg-[#0a0a0a]">
-          {previewSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewSrc}
-              alt={item.title}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-            />
+          {item.thumbnail || item.video?.type === "tiktok" ? (
+            <div className={`h-full w-full ${isVertical ? "mx-auto max-w-[56%]" : ""}`}>
+              <SocialVideoPreview
+                title={item.title}
+                thumbnail={item.thumbnail}
+                video={item.video}
+                vertical={isVertical}
+              />
+            </div>
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#121212] via-[#0a0a0a] to-black">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.06),transparent_50%)]" />

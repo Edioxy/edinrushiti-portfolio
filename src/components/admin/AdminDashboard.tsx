@@ -26,7 +26,7 @@ import {
   type UgcSection,
 } from "@/lib/content-types";
 import { parseVideoInput, resolveThumbnail } from "@/lib/video";
-import { getVideoPreviewSrc } from "@/lib/social-thumbnail";
+import { SocialVideoPreview } from "@/components/SocialVideoPreview";
 
 type Tab = "portfolio" | "ugc" | "copy" | "settings";
 
@@ -785,7 +785,7 @@ function VideoListItem({
   children,
 }: VideoListItemProps) {
   const parsed = parseVideoInput(item.video);
-  const preview = getVideoPreviewSrc(item.thumbnail, parsed, item.video);
+  const preview = resolveThumbnail(item.thumbnail, parsed);
   const platform = getPlatformLabel(parsed?.type, item.video);
   const hasVideo = Boolean(item.video?.trim());
 
@@ -829,7 +829,13 @@ function VideoListItem({
           onClick={onToggle}
           className="flex min-w-0 flex-1 items-center gap-4 p-4 text-left sm:gap-5 sm:p-5"
         >
-          <VideoPreviewThumb preview={preview} vertical={vertical} title={item.title} />
+          <VideoPreviewThumb
+            preview={preview}
+            video={parsed}
+            rawVideoUrl={item.video}
+            vertical={vertical}
+            title={item.title}
+          />
 
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -871,6 +877,8 @@ function VideoListItem({
               <p className="text-[11px] tracking-[0.2em] text-white/35 uppercase">Preview</p>
               <VideoPreviewThumb
                 preview={preview}
+                video={parsed}
+                rawVideoUrl={item.video}
                 vertical={vertical}
                 title={item.title}
                 large
@@ -898,11 +906,15 @@ function VideoListItem({
 
 function VideoPreviewThumb({
   preview,
+  video,
+  rawVideoUrl,
   vertical,
   title,
   large = false,
 }: {
   preview?: string;
+  video?: ReturnType<typeof parseVideoInput>;
+  rawVideoUrl?: string;
   vertical: boolean;
   title: string;
   large?: boolean;
@@ -919,14 +931,14 @@ function VideoPreviewThumb({
     <div
       className={`relative overflow-hidden rounded-xl border border-white/10 bg-[#050505] ${sizeClass}`}
     >
-      {preview ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={preview} alt={title} className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#161616] to-black">
-          <Play className="h-5 w-5 text-white/25" />
-        </div>
-      )}
+      <SocialVideoPreview
+        title={title}
+        thumbnail={preview}
+        video={video}
+        rawVideoUrl={rawVideoUrl}
+        vertical={vertical}
+        large={large}
+      />
     </div>
   );
 }
