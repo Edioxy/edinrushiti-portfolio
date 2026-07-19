@@ -40,8 +40,8 @@ export function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [expandedPortfolio, setExpandedPortfolio] = useState<number | null>(0);
-  const [expandedUgc, setExpandedUgc] = useState<number | null>(0);
+  const [expandedPortfolio, setExpandedPortfolio] = useState<number | null>(null);
+  const [expandedUgc, setExpandedUgc] = useState<number | null>(null);
 
   useEffect(() => {
     void loadContent();
