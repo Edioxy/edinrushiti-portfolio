@@ -237,7 +237,7 @@ export function AdminDashboard() {
           <section className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-white/45">
-                Paste YouTube or Vimeo for best results. Google Drive works too, but add a thumbnail manually.
+                YouTube, Vimeo, TikTok, or Instagram links. Add a thumbnail for TikTok and Instagram.
               </p>
               <button
                 type="button"
@@ -278,11 +278,11 @@ export function AdminDashboard() {
                     onChange={(value) => updatePortfolio(index, { description: value })}
                   />
                 </Field>
-                <Field label="Video URL (YouTube, Vimeo, Google Drive, or /videos/file.mp4)">
+                <Field label="Video URL (YouTube, Vimeo, TikTok, Instagram, Drive, or /videos/file.mp4)">
                   <Input
                     value={item.video ?? ""}
                     onChange={(value) => updatePortfolio(index, { video: value })}
-                    placeholder="https://www.youtube.com/watch?v=..."
+                    placeholder="https://www.youtube.com/watch?v=... or https://www.tiktok.com/..."
                   />
                 </Field>
                 <Field label="Thumbnail URL (optional)">
@@ -301,7 +301,7 @@ export function AdminDashboard() {
           <section className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-white/45">
-                Vertical 9:16 edits. Prefer YouTube/Vimeo; Google Drive needs a custom thumbnail.
+                Perfect for TikTok and Instagram Reels. Paste the share link and add a thumbnail image.
               </p>
               <button
                 type="button"
@@ -340,7 +340,7 @@ export function AdminDashboard() {
                   <Input
                     value={item.video ?? ""}
                     onChange={(value) => updateUgc(index, { video: value })}
-                    placeholder="https://youtu.be/..."
+                    placeholder="https://www.tiktok.com/@you/video/... or https://www.instagram.com/reel/..."
                   />
                 </Field>
                 <Field label="Thumbnail URL (optional)">

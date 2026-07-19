@@ -47,7 +47,6 @@ export function PortfolioGrid({ items }: PortfolioGridProps) {
         open={open}
         playlist={playlist}
         startId={startId}
-        aspect="16/9"
         onClose={() => setOpen(false)}
       />
     </>

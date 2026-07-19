@@ -147,7 +147,6 @@ export function UgcCarousel({ items }: UgcCarouselProps) {
         open={open}
         playlist={playlist}
         startId={startId}
-        aspect="9/16"
         onClose={() => setOpen(false)}
       />
     </>

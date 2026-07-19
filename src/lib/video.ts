@@ -1,5 +1,5 @@
 export type VideoSource = {
-  type: "youtube" | "vimeo" | "gdrive" | "file" | "link";
+  type: "youtube" | "vimeo" | "tiktok" | "instagram" | "gdrive" | "file" | "link";
   embedUrl?: string;
   href: string;
   thumbnail?: string;
@@ -51,6 +51,23 @@ export function buildVimeoEmbedUrl(videoId: string) {
   return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
 }
 
+export function buildTikTokEmbedUrl(videoId: string) {
+  return `https://www.tiktok.com/embed/v2/${videoId}`;
+}
+
+export function buildInstagramEmbedUrl(shortcode: string, kind: "reel" | "post") {
+  const path = kind === "reel" ? "reel" : "p";
+  return `https://www.instagram.com/${path}/${shortcode}/embed`;
+}
+
+export function getVideoAspect(video: VideoSource): "16/9" | "9/16" {
+  if (video.type === "tiktok" || video.type === "instagram") {
+    return "9/16";
+  }
+
+  return "16/9";
+}
+
 export function getYouTubeIdFromSource(video: VideoSource) {
   return parseYouTubeId(video.href) ?? parseYouTubeId(video.embedUrl ?? "");
 }
@@ -63,6 +80,35 @@ export function getVimeoIdFromSource(video: VideoSource) {
 function parseVimeoId(url: string) {
   const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return match?.[1] ?? null;
+}
+
+function parseTikTokId(url: string) {
+  const patterns = [
+    /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+    /tiktok\.com\/video\/(\d+)/,
+    /tiktok\.com\/embed\/v2\/(\d+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return null;
+}
+
+function parseInstagramShortcode(url: string) {
+  const reelMatch = url.match(/instagram\.com\/reels?\/([A-Za-z0-9_-]+)/);
+  if (reelMatch?.[1]) {
+    return { shortcode: reelMatch[1], kind: "reel" as const };
+  }
+
+  const postMatch = url.match(/instagram\.com\/p\/([A-Za-z0-9_-]+)/);
+  if (postMatch?.[1]) {
+    return { shortcode: postMatch[1], kind: "post" as const };
+  }
+
+  return null;
 }
 
 function parseGoogleDriveId(url: string) {
@@ -100,6 +146,26 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
       type: "vimeo",
       href: `https://vimeo.com/${vimeoId}`,
       embedUrl: buildVimeoEmbedUrl(vimeoId),
+    };
+  }
+
+  const tiktokId = parseTikTokId(value);
+  if (tiktokId) {
+    return {
+      type: "tiktok",
+      href: `https://www.tiktok.com/video/${tiktokId}`,
+      embedUrl: buildTikTokEmbedUrl(tiktokId),
+    };
+  }
+
+  const instagram = parseInstagramShortcode(value);
+  if (instagram) {
+    const path = instagram.kind === "reel" ? "reel" : "p";
+
+    return {
+      type: "instagram",
+      href: `https://www.instagram.com/${path}/${instagram.shortcode}/`,
+      embedUrl: buildInstagramEmbedUrl(instagram.shortcode, instagram.kind),
     };
   }
 

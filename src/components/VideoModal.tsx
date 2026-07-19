@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { VideoSource } from "@/lib/video";
+import { getVideoAspect, type VideoSource } from "@/lib/video";
 
 export type VideoPlaylistItem = {
   id: string;
@@ -15,7 +15,6 @@ type VideoModalProps = {
   open: boolean;
   playlist: VideoPlaylistItem[];
   startId?: string;
-  aspect?: "16/9" | "9/16";
   onClose: () => void;
 };
 
@@ -23,7 +22,6 @@ export function VideoModal({
   open,
   playlist,
   startId,
-  aspect = "16/9",
   onClose,
 }: VideoModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -68,7 +66,10 @@ export function VideoModal({
 
   if (!open || !current) return null;
 
-  const aspectClass = aspect === "9/16" ? "aspect-[9/16] max-w-sm" : "aspect-video max-w-5xl";
+  const isVertical = getVideoAspect(current.video) === "9/16";
+  const aspectClass = isVertical
+    ? "aspect-[9/16] max-h-[78vh] max-w-sm"
+    : "aspect-video max-w-5xl";
 
   return (
     <div
@@ -158,8 +159,9 @@ export function VideoModal({
                 key={iframeKey}
                 src={current.video.embedUrl}
                 title={current.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 allowFullScreen
+                scrolling="no"
                 className="h-full w-full rounded-2xl bg-black"
               />
             ) : (
