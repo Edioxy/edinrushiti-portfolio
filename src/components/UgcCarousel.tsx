@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { useSocialThumbnail } from "@/hooks/useSocialThumbnail";
 import type { UgcVideo } from "@/lib/video";
 import { VideoModal, type VideoPlaylistItem } from "./VideoModal";
 
@@ -12,6 +13,7 @@ type UgcCardProps = {
 
 function UgcCard({ item, onPlay }: UgcCardProps) {
   const hasVideo = Boolean(item.video);
+  const thumbnail = useSocialThumbnail(item.thumbnail, item.video);
 
   return (
     <article className="group w-[220px] shrink-0 snap-start sm:w-[260px]">
@@ -24,10 +26,10 @@ function UgcCard({ item, onPlay }: UgcCardProps) {
           aria-label={hasVideo ? `Play ${item.title}` : item.title}
         >
           <div className="relative aspect-[9/16] overflow-hidden bg-[#0a0a0a]">
-            {item.thumbnail ? (
+            {thumbnail ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={item.thumbnail}
+                src={thumbnail}
                 alt={item.title}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"

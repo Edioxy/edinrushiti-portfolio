@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { readPortfolioContent, savePortfolioContent } from "@/lib/content-store";
+import { enrichContentThumbnails } from "@/lib/social-thumbnail";
 import { normalizeContent, type PortfolioContentFile } from "@/lib/content-types";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,9 @@ export async function PUT(request: Request) {
 
   try {
     const body = (await request.json()) as PortfolioContentFile;
-    const saved = await savePortfolioContent(normalizeContent(body));
+    const normalized = normalizeContent(body);
+    const enriched = await enrichContentThumbnails(normalized);
+    const saved = await savePortfolioContent(enriched);
 
     return NextResponse.json({
       ok: true,

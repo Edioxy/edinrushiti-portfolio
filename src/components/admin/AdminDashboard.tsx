@@ -790,7 +790,7 @@ function VideoListItem({
   const hasVideo = Boolean(item.video?.trim());
 
   useEffect(() => {
-    if (!expanded || item.thumbnail?.trim() || parsed?.type !== "tiktok" || !item.video) {
+    if (item.thumbnail?.trim() || parsed?.type !== "tiktok" || !item.video) {
       return;
     }
 
@@ -808,7 +808,7 @@ function VideoListItem({
     return () => {
       cancelled = true;
     };
-  }, [expanded, item.thumbnail, item.video, parsed?.type]);
+  }, [item.thumbnail, item.video, parsed?.type]);
 
   return (
     <article

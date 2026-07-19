@@ -103,6 +103,22 @@ export function getTikTokVideoId(url: string) {
   return null;
 }
 
+export function normalizeTikTokUrl(input: string) {
+  const trimmed = input.trim().split("?")[0].replace(/\/$/, "");
+  const videoId = getTikTokVideoId(trimmed);
+
+  if (!videoId) {
+    return trimmed;
+  }
+
+  const handleMatch = trimmed.match(/tiktok\.com\/@([\w.-]+)\/video\//);
+  if (handleMatch?.[1]) {
+    return `https://www.tiktok.com/@${handleMatch[1]}/video/${videoId}`;
+  }
+
+  return `https://www.tiktok.com/video/${videoId}`;
+}
+
 export function buildInstagramEmbedUrl(shortcode: string, kind: "reel" | "post") {
   const path = kind === "reel" ? "reel" : "p";
   return `https://www.instagram.com/${path}/${shortcode}/embed?autoplay=1&mute=0`;
@@ -222,9 +238,7 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
 
   const tiktokId = parseTikTokId(value);
   if (tiktokId) {
-    const href = /tiktok\.com/.test(value)
-      ? value.split("?")[0]
-      : `https://www.tiktok.com/video/${tiktokId}`;
+    const href = normalizeTikTokUrl(value);
 
     return {
       type: "tiktok",

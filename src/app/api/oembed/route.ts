@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { fetchTikTokThumbnail } from "@/lib/social-thumbnail";
-import { parseVideoInput } from "@/lib/video";
+import { normalizeTikTokUrl, parseVideoInput } from "@/lib/video";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const url = new URL(request.url).searchParams.get("url");
@@ -15,7 +17,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ thumbnail: null });
   }
 
-  const thumbnail = await fetchTikTokThumbnail(video.href);
+  const thumbnail = await fetchTikTokThumbnail(normalizeTikTokUrl(video.href), {
+    revalidate: false,
+  });
 
-  return NextResponse.json({ thumbnail: thumbnail ?? null });
+  return NextResponse.json(
+    { thumbnail: thumbnail ?? null },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
 }
