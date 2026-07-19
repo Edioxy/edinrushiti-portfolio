@@ -15,6 +15,9 @@ export function Hero({ sections = DEFAULT_SECTIONS }: HeroProps) {
         videoUrl={hero.backgroundVideoUrl}
         startSeconds={hero.backgroundStartSeconds}
         endSeconds={hero.backgroundEndSeconds}
+        blur={hero.backgroundBlur}
+        videoOpacity={hero.backgroundVideoOpacity}
+        darkness={hero.backgroundDarkness}
       />
 
       <div className="pointer-events-none absolute inset-0">

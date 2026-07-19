@@ -37,6 +37,9 @@ export type HeroSection = {
   backgroundVideoUrl?: string;
   backgroundStartSeconds?: number;
   backgroundEndSeconds?: number;
+  backgroundBlur?: number;
+  backgroundVideoOpacity?: number;
+  backgroundDarkness?: number;
 };
 
 export type UgcSection = SectionBlock & {
@@ -84,6 +87,9 @@ export const DEFAULT_SECTIONS: SiteSections = {
     backgroundVideoUrl: "",
     backgroundStartSeconds: 0,
     backgroundEndSeconds: 0,
+    backgroundBlur: 40,
+    backgroundVideoOpacity: 60,
+    backgroundDarkness: 35,
   },
   portfolio: {
     eyebrow: "Portfolio",

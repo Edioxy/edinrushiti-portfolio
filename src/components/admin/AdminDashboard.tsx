@@ -601,10 +601,37 @@ export function AdminDashboard() {
                         />
                       </Field>
                     </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <RangeField
+                        label="Blur"
+                        value={sections.hero.backgroundBlur ?? 40}
+                        min={0}
+                        max={80}
+                        suffix="px"
+                        onChange={(value) => updateHeroSection({ backgroundBlur: value })}
+                      />
+                      <RangeField
+                        label="Video Visibility"
+                        value={sections.hero.backgroundVideoOpacity ?? 60}
+                        min={0}
+                        max={100}
+                        suffix="%"
+                        onChange={(value) => updateHeroSection({ backgroundVideoOpacity: value })}
+                      />
+                      <RangeField
+                        label="Darkness Overlay"
+                        value={sections.hero.backgroundDarkness ?? 35}
+                        min={0}
+                        max={100}
+                        suffix="%"
+                        onChange={(value) => updateHeroSection({ backgroundDarkness: value })}
+                      />
+                    </div>
                     <p className="text-xs leading-relaxed text-white/35">
                       Paste a YouTube link for a heavily blurred, muted background loop. Set loop
                       end higher than loop start to repeat only part of the video. Leave loop end
-                      at 0 to replay the full clip.
+                      at 0 to replay the full clip. Lower darkness or raise video visibility if
+                      the background feels too dim.
                     </p>
                   </div>
                 </div>
@@ -1071,6 +1098,42 @@ function SectionBlockFields({
         />
       </Field>
     </div>
+  );
+}
+
+function RangeField({
+  label,
+  value,
+  min,
+  max,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  suffix?: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="block">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <span className="text-[11px] tracking-[0.2em] text-white/35 uppercase">{label}</span>
+        <span className="text-xs text-white/55">
+          {value}
+          {suffix ?? ""}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-white"
+      />
+    </label>
   );
 }
 
