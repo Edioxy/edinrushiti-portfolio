@@ -15,7 +15,10 @@
       "description": "Premium commercial edits, cinematic storytelling, and scroll-stopping UGC — engineered for brands that demand visual excellence.",
       "primaryCta": "View Work",
       "secondaryCta": "Contact Me",
-      "scrollLabel": "Scroll"
+      "scrollLabel": "Scroll",
+      "backgroundVideoUrl": "https://www.youtube.com/watch?v=EpNMWJFrTsU",
+      "backgroundStartSeconds": 2,
+      "backgroundEndSeconds": 25
     },
     "portfolio": {
       "eyebrow": "Portfolio",
