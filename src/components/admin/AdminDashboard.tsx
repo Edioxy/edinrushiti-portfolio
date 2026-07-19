@@ -472,7 +472,7 @@ function VideoListSection<T extends VideoRow>({
         <div className="space-y-3">
           {items.map((item, index) => (
             <VideoListItem
-              key={`${item.title}-${index}`}
+              key={`row-${index}`}
               item={item}
               index={index}
               meta={getMeta(item)}
