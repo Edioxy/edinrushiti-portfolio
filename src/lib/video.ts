@@ -1,5 +1,5 @@
 export type VideoSource = {
-  type: "youtube" | "vimeo" | "file" | "link";
+  type: "youtube" | "vimeo" | "gdrive" | "file" | "link";
   embedUrl?: string;
   href: string;
   thumbnail?: string;
@@ -43,9 +43,66 @@ function parseYouTubeId(url: string) {
   return null;
 }
 
+export function buildYouTubeEmbedUrl(videoId: string, origin?: string) {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    rel: "0",
+    controls: "0",
+    modestbranding: "1",
+    iv_load_policy: "3",
+    cc_load_policy: "0",
+    playsinline: "1",
+    fs: "1",
+    disablekb: "0",
+  });
+
+  if (origin) {
+    params.set("origin", origin);
+  }
+
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+}
+
+export function buildVimeoEmbedUrl(videoId: string) {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    title: "0",
+    byline: "0",
+    portrait: "0",
+    badge: "0",
+    dnt: "1",
+  });
+
+  return `https://player.vimeo.com/video/${videoId}?${params.toString()}`;
+}
+
+export function getYouTubeIdFromSource(video: VideoSource) {
+  return parseYouTubeId(video.href) ?? parseYouTubeId(video.embedUrl ?? "");
+}
+
+export function getVimeoIdFromSource(video: VideoSource) {
+  const match = video.href.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match?.[1] ?? null;
+}
+
 function parseVimeoId(url: string) {
   const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return match?.[1] ?? null;
+}
+
+function parseGoogleDriveId(url: string) {
+  const patterns = [
+    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/uc\?.*id=([a-zA-Z0-9_-]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return null;
 }
 
 export function parseVideoInput(input?: string): VideoSource | undefined {
@@ -57,7 +114,7 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
     return {
       type: "youtube",
       href: `https://www.youtube.com/watch?v=${youtubeId}`,
-      embedUrl: `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`,
+      embedUrl: buildYouTubeEmbedUrl(youtubeId, "https://edinrushiti.com"),
       thumbnail: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
     };
   }
@@ -67,7 +124,16 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
     return {
       type: "vimeo",
       href: `https://vimeo.com/${vimeoId}`,
-      embedUrl: `https://player.vimeo.com/video/${vimeoId}?autoplay=1`,
+      embedUrl: buildVimeoEmbedUrl(vimeoId),
+    };
+  }
+
+  const driveId = parseGoogleDriveId(value);
+  if (driveId) {
+    return {
+      type: "gdrive",
+      href: `https://drive.google.com/file/d/${driveId}/view`,
+      embedUrl: `https://drive.google.com/file/d/${driveId}/preview`,
     };
   }
 

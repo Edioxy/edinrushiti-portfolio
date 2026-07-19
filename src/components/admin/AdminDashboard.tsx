@@ -237,7 +237,7 @@ export function AdminDashboard() {
           <section className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-white/45">
-                Paste a YouTube or Vimeo link. Thumbnail is optional for YouTube.
+                Paste YouTube or Vimeo for best results. Google Drive works too, but add a thumbnail manually.
               </p>
               <button
                 type="button"
@@ -278,7 +278,7 @@ export function AdminDashboard() {
                     onChange={(value) => updatePortfolio(index, { description: value })}
                   />
                 </Field>
-                <Field label="Video URL (YouTube, Vimeo, or /videos/file.mp4)">
+                <Field label="Video URL (YouTube, Vimeo, Google Drive, or /videos/file.mp4)">
                   <Input
                     value={item.video ?? ""}
                     onChange={(value) => updatePortfolio(index, { video: value })}
@@ -300,7 +300,9 @@ export function AdminDashboard() {
         {tab === "ugc" && (
           <section className="space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-white/45">Vertical 9:16 edits for your UGC section.</p>
+              <p className="text-sm text-white/45">
+                Vertical 9:16 edits. Prefer YouTube/Vimeo; Google Drive needs a custom thumbnail.
+              </p>
               <button
                 type="button"
                 onClick={() =>
