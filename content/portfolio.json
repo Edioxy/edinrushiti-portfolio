@@ -18,7 +18,10 @@
       "scrollLabel": "Scroll",
       "backgroundVideoUrl": "https://www.youtube.com/watch?v=EpNMWJFrTsU",
       "backgroundStartSeconds": 2,
-      "backgroundEndSeconds": 25
+      "backgroundEndSeconds": 25,
+      "backgroundBlur": 62,
+      "backgroundVideoOpacity": 100,
+      "backgroundDarkness": 35
     },
     "portfolio": {
       "eyebrow": "Portfolio",
