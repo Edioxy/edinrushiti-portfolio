@@ -36,9 +36,9 @@ export const tools = [
     description: "Product visualization, motion graphics, and 3D integration.",
   },
   {
-    name: "Rotato",
-    category: "3D Mockups",
-    description: "Premium device and product mockup animations.",
+    name: "DaVinci Resolve",
+    category: "Color & Finish",
+    description: "Professional color grading, HDR delivery, and final polish for commercial work.",
   },
   {
     name: "AI Video Pipelines",
