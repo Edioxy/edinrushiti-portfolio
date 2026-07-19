@@ -2,12 +2,14 @@
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { SocialClipPlayer } from "@/components/SocialClipPlayer";
 import { getVideoAspect, type VideoSource } from "@/lib/video";
 
 export type VideoPlaylistItem = {
   id: string;
   title: string;
   meta?: string;
+  thumbnail?: string;
   video: VideoSource;
 };
 
@@ -70,6 +72,8 @@ export function VideoModal({
   const aspectClass = isVertical
     ? "aspect-[9/16] max-h-[78vh] max-w-sm"
     : "aspect-video max-w-5xl";
+  const isSocialClip =
+    current.video.type === "tiktok" || current.video.type === "instagram";
 
   return (
     <div
@@ -153,6 +157,13 @@ export function VideoModal({
                 autoPlay
                 playsInline
                 className="h-full w-full rounded-2xl bg-black object-contain"
+              />
+            ) : isSocialClip ? (
+              <SocialClipPlayer
+                video={current.video}
+                title={current.title}
+                thumbnail={current.thumbnail}
+                resetKey={iframeKey}
               />
             ) : current.video.embedUrl ? (
               <iframe

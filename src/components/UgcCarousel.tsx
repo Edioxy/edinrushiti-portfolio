@@ -89,6 +89,7 @@ export function UgcCarousel({ items }: UgcCarouselProps) {
           id: item.id,
           title: item.title,
           meta: item.brand,
+          thumbnail: item.thumbnail,
           video: item.video,
         })),
     [items],

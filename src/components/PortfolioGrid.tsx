@@ -23,6 +23,7 @@ export function PortfolioGrid({ items }: PortfolioGridProps) {
           id: item.id,
           title: item.title,
           meta: item.category,
+          thumbnail: item.thumbnail,
           video: item.video,
         })),
     [items],

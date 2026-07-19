@@ -1,4 +1,6 @@
 import { readPortfolioContent } from "@/lib/content-store";
+import { resolveSocialThumbnail } from "@/lib/social-thumbnail";
+import type { PortfolioContentFile } from "@/lib/content-types";
 import {
   makePortfolioId,
   makeUgcId,
@@ -7,33 +9,42 @@ import {
   type PortfolioVideo,
   type UgcVideo,
 } from "@/lib/video";
-import type { PortfolioContentFile } from "@/lib/content-types";
 
-export function mapContentToVideos(content: PortfolioContentFile) {
-  const portfolioItems: PortfolioVideo[] = content.portfolio.map((item, index) => {
-    const video = parseVideoInput(item.video);
+export async function mapContentToVideos(content: PortfolioContentFile) {
+  const portfolioItems: PortfolioVideo[] = await Promise.all(
+    content.portfolio.map(async (item, index) => {
+      const video = parseVideoInput(item.video);
+      const thumbnail = video
+        ? await resolveSocialThumbnail(item.thumbnail, video)
+        : resolveThumbnail(item.thumbnail, video);
 
-    return {
-      id: makePortfolioId(item.title, index),
-      title: item.title,
-      category: item.category,
-      description: item.description,
-      video,
-      thumbnail: resolveThumbnail(item.thumbnail, video),
-    };
-  });
+      return {
+        id: makePortfolioId(item.title, index),
+        title: item.title,
+        category: item.category,
+        description: item.description,
+        video,
+        thumbnail,
+      };
+    }),
+  );
 
-  const ugcItems: UgcVideo[] = content.ugc.map((item, index) => {
-    const video = parseVideoInput(item.video);
+  const ugcItems: UgcVideo[] = await Promise.all(
+    content.ugc.map(async (item, index) => {
+      const video = parseVideoInput(item.video);
+      const thumbnail = video
+        ? await resolveSocialThumbnail(item.thumbnail, video)
+        : resolveThumbnail(item.thumbnail, video);
 
-    return {
-      id: makeUgcId(item.title, index),
-      title: item.title,
-      brand: item.brand,
-      video,
-      thumbnail: resolveThumbnail(item.thumbnail, video),
-    };
-  });
+      return {
+        id: makeUgcId(item.title, index),
+        title: item.title,
+        brand: item.brand,
+        video,
+        thumbnail,
+      };
+    }),
+  );
 
   return { portfolioItems, ugcItems, settings: content.settings };
 }

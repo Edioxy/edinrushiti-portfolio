@@ -51,8 +51,34 @@ export function buildVimeoEmbedUrl(videoId: string) {
   return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
 }
 
-export function buildTikTokEmbedUrl(videoId: string) {
-  return `https://www.tiktok.com/embed/v2/${videoId}`;
+export function buildTikTokEmbedUrl(videoId: string, autoplay = true) {
+  const params = new URLSearchParams({
+    music_info: "0",
+    description: "0",
+    controls: "1",
+  });
+
+  if (autoplay) {
+    params.set("autoplay", "1");
+  }
+
+  return `https://www.tiktok.com/player/v1/${videoId}?${params.toString()}`;
+}
+
+export function getTikTokVideoId(url: string) {
+  const patterns = [
+    /tiktok\.com\/@[\w.-]+\/video\/(\d+)/,
+    /tiktok\.com\/video\/(\d+)/,
+    /tiktok\.com\/embed\/v2\/(\d+)/,
+    /tiktok\.com\/player\/v1\/(\d+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return null;
 }
 
 export function buildInstagramEmbedUrl(shortcode: string, kind: "reel" | "post") {
@@ -151,9 +177,13 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
 
   const tiktokId = parseTikTokId(value);
   if (tiktokId) {
+    const href = /tiktok\.com/.test(value)
+      ? value.split("?")[0]
+      : `https://www.tiktok.com/video/${tiktokId}`;
+
     return {
       type: "tiktok",
-      href: `https://www.tiktok.com/video/${tiktokId}`,
+      href,
       embedUrl: buildTikTokEmbedUrl(tiktokId),
     };
   }
