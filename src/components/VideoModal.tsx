@@ -165,6 +165,7 @@ export function VideoModal({
                 video={current.video}
                 title={current.title}
                 resetKey={iframeKey}
+                poster={current.thumbnail}
               />
             ) : isYouTube ? (
               <YouTubeEmbedPlayer video={current.video} resetKey={iframeKey} />

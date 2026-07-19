@@ -107,7 +107,14 @@ export function SocialVideoPreview({
   }
 
   if (isInstagram) {
-    return <InstagramReelPreview video={video} title={title} rawVideoUrl={rawVideoUrl} />;
+    return (
+      <InstagramReelPreview
+        video={video}
+        title={title}
+        rawVideoUrl={rawVideoUrl}
+        poster={previewSrc}
+      />
+    );
   }
 
   return (

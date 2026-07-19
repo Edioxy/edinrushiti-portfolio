@@ -12,9 +12,10 @@ type SocialClipPlayerProps = {
   video: VideoSource;
   title: string;
   resetKey: string;
+  poster?: string;
 };
 
-export function SocialClipPlayer({ video, title, resetKey }: SocialClipPlayerProps) {
+export function SocialClipPlayer({ video, title, resetKey, poster }: SocialClipPlayerProps) {
   if (video.type === "tiktok") {
     return <TikTokNativePlayer video={video} title={title} resetKey={resetKey} />;
   }
@@ -26,7 +27,7 @@ export function SocialClipPlayer({ video, title, resetKey }: SocialClipPlayerPro
       return <OpenLinkFallback href={video.href} label="Open on Instagram" />;
     }
 
-    return <InstagramReelPlayer video={video} title={title} resetKey={resetKey} />;
+    return <InstagramReelPlayer video={video} title={title} resetKey={resetKey} poster={poster} />;
   }
 
   if (video.embedUrl) {
