@@ -168,6 +168,10 @@ export function getVideoAspect(video: VideoSource): "16/9" | "9/16" {
     return "9/16";
   }
 
+  if (video.type === "file" && video.variant === "short") {
+    return "9/16";
+  }
+
   return "16/9";
 }
 

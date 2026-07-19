@@ -81,6 +81,27 @@ export function SocialVideoPreview({
     );
   }
 
+  if (video?.type === "file" || (rawVideoUrl?.trim().startsWith("/") && /\.(mp4|webm)$/i.test(rawVideoUrl))) {
+    const src = video?.embedUrl ?? video?.href ?? rawVideoUrl?.trim();
+    if (!src) {
+      return null;
+    }
+
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-black">
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <video
+          src={src}
+          title={title}
+          muted
+          playsInline
+          preload="metadata"
+          className="h-full w-full object-cover"
+        />
+      </div>
+    );
+  }
+
   if (isTikTok) {
     return <TikTokNativePreview video={video} title={title} rawVideoUrl={rawVideoUrl} />;
   }

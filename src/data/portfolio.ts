@@ -67,6 +67,13 @@ export async function mapContentToVideos(content: PortfolioContentFile) {
         }
       }
 
+      if (parsed?.type === "file") {
+        video = {
+          ...parsed,
+          variant: "short",
+        };
+      }
+
       const thumbnail = video
         ? await resolveSocialThumbnail(item.thumbnail, video)
         : resolveThumbnail(item.thumbnail, video);
