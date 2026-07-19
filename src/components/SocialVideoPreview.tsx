@@ -38,17 +38,22 @@ export function SocialVideoPreview({
   }, [previewSrc, sourceUrl, video?.type]);
 
   useEffect(() => {
-    if (previewSrc || video?.type !== "instagram" || !sourceUrl) {
+    if (previewSrc || !sourceUrl) {
+      return;
+    }
+
+    if (video?.type !== "instagram" && !/instagram\.com/.test(sourceUrl)) {
       return;
     }
 
     let cancelled = false;
 
-    void fetch(`/api/oembed?url=${encodeURIComponent(sourceUrl)}`)
-      .then((response) => response.json())
-      .then((data: { thumbnail?: string | null }) => {
-        if (!cancelled && data.thumbnail) {
-          setFetchedThumbnail(data.thumbnail);
+    void fetch(`/api/instagram/media?url=${encodeURIComponent(sourceUrl)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(response)))
+      .then((data: { thumbnail?: string | null; thumbnailUrl?: string | null }) => {
+        const thumbnail = data.thumbnailUrl ?? data.thumbnail;
+        if (!cancelled && thumbnail) {
+          setFetchedThumbnail(thumbnail);
         }
       })
       .catch(() => undefined);
