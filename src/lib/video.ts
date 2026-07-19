@@ -1,5 +1,6 @@
 export type VideoSource = {
   type: "youtube" | "vimeo" | "tiktok" | "instagram" | "gdrive" | "file" | "link";
+  variant?: "short" | "standard";
   embedUrl?: string;
   href: string;
   thumbnail?: string;
@@ -43,12 +44,31 @@ function parseYouTubeId(url: string) {
   return null;
 }
 
-export function buildYouTubeEmbedUrl(videoId: string) {
-  return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+function isYouTubeShortUrl(url: string) {
+  return /youtube\.com\/shorts\//.test(url);
+}
+
+export function buildYouTubeEmbedUrl(
+  videoId: string,
+  options?: { short?: boolean; muted?: boolean },
+) {
+  const params = new URLSearchParams({
+    autoplay: "1",
+    rel: "0",
+    playsinline: "1",
+    mute: options?.muted === true ? "1" : "0",
+  });
+
+  if (options?.short) {
+    params.set("loop", "1");
+    params.set("playlist", videoId);
+  }
+
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 export function buildVimeoEmbedUrl(videoId: string) {
-  return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+  return `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=0`;
 }
 
 export function buildTikTokEmbedUrl(videoId: string, autoplay = true) {
@@ -61,6 +81,8 @@ export function buildTikTokEmbedUrl(videoId: string, autoplay = true) {
   if (autoplay) {
     params.set("autoplay", "1");
   }
+
+  params.set("mute", "0");
 
   return `https://www.tiktok.com/player/v1/${videoId}?${params.toString()}`;
 }
@@ -83,7 +105,7 @@ export function getTikTokVideoId(url: string) {
 
 export function buildInstagramEmbedUrl(shortcode: string, kind: "reel" | "post") {
   const path = kind === "reel" ? "reel" : "p";
-  return `https://www.instagram.com/${path}/${shortcode}/embed`;
+  return `https://www.instagram.com/${path}/${shortcode}/embed?autoplay=1&mute=0`;
 }
 
 export function getVideoAspect(video: VideoSource): "16/9" | "9/16" {
@@ -91,7 +113,25 @@ export function getVideoAspect(video: VideoSource): "16/9" | "9/16" {
     return "9/16";
   }
 
+  if (video.type === "youtube" && video.variant === "short") {
+    return "9/16";
+  }
+
   return "16/9";
+}
+
+export function isVerticalVideo(video: VideoSource) {
+  return getVideoAspect(video) === "9/16";
+}
+
+export function getYouTubeEmbedSrc(video: VideoSource) {
+  const videoId = getYouTubeIdFromSource(video);
+  if (!videoId) return video.embedUrl;
+
+  return buildYouTubeEmbedUrl(videoId, {
+    short: video.variant === "short",
+    muted: false,
+  });
 }
 
 export function getYouTubeIdFromSource(video: VideoSource) {
@@ -158,10 +198,15 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
 
   const youtubeId = parseYouTubeId(value);
   if (youtubeId) {
+    const isShort = isYouTubeShortUrl(value);
+
     return {
       type: "youtube",
-      href: `https://www.youtube.com/watch?v=${youtubeId}`,
-      embedUrl: buildYouTubeEmbedUrl(youtubeId),
+      variant: isShort ? "short" : "standard",
+      href: isShort
+        ? `https://www.youtube.com/shorts/${youtubeId}`
+        : `https://www.youtube.com/watch?v=${youtubeId}`,
+      embedUrl: buildYouTubeEmbedUrl(youtubeId, { short: isShort, muted: false }),
       thumbnail: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
     };
   }

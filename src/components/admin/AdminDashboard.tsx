@@ -3,6 +3,7 @@
 import {
   ChevronDown,
   ExternalLink,
+  GripVertical,
   LogOut,
   Play,
   Plus,
@@ -170,6 +171,28 @@ export function AdminDashboard() {
     });
   }
 
+  function reorderPortfolio(fromIndex: number, toIndex: number) {
+    if (!content || fromIndex === toIndex) return;
+
+    setContent({
+      ...content,
+      portfolio: reorderList(content.portfolio, fromIndex, toIndex),
+    });
+
+    setExpandedPortfolio((current) => adjustExpandedIndex(current, fromIndex, toIndex));
+  }
+
+  function reorderUgc(fromIndex: number, toIndex: number) {
+    if (!content || fromIndex === toIndex) return;
+
+    setContent({
+      ...content,
+      ugc: reorderList(content.ugc, fromIndex, toIndex),
+    });
+
+    setExpandedUgc((current) => adjustExpandedIndex(current, fromIndex, toIndex));
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white/60">
@@ -273,12 +296,13 @@ export function AdminDashboard() {
 
         {tab === "portfolio" && (
           <VideoListSection
-            description="Tap a project to expand and edit. YouTube, Vimeo, TikTok, Instagram, or MP4 links supported."
+            description="Drag to reorder what appears first on the site. Tap a project to expand and edit. YouTube, Vimeo, TikTok, Instagram, or MP4 links supported."
             addLabel="Add Video"
             emptyLabel="No commercial videos yet."
             items={content.portfolio}
             expandedIndex={expandedPortfolio}
             onExpand={setExpandedPortfolio}
+            onReorder={reorderPortfolio}
             onAdd={() => {
               const nextIndex = content.portfolio.length;
               setContent({
@@ -334,12 +358,13 @@ export function AdminDashboard() {
 
         {tab === "ugc" && (
           <VideoListSection
-            description="Vertical edits for TikTok, Reels, and paid social. Add a thumbnail for social links."
+            description="Drag to reorder the carousel. Vertical edits for TikTok, Reels, and paid social. Add a thumbnail for social links."
             addLabel="Add UGC"
             emptyLabel="No UGC edits yet."
             items={content.ugc}
             expandedIndex={expandedUgc}
             onExpand={setExpandedUgc}
+            onReorder={reorderUgc}
             onAdd={() => {
               const nextIndex = content.ugc.length;
               setContent({
@@ -430,6 +455,7 @@ type VideoListSectionProps<T extends VideoRow> = {
   items: T[];
   expandedIndex: number | null;
   onExpand: (index: number | null) => void;
+  onReorder: (fromIndex: number, toIndex: number) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
   renderExpanded: (item: T, index: number) => React.ReactNode;
@@ -444,12 +470,37 @@ function VideoListSection<T extends VideoRow>({
   items,
   expandedIndex,
   onExpand,
+  onReorder,
   onAdd,
   onRemove,
   renderExpanded,
   getMeta,
   isVertical,
 }: VideoListSectionProps<T>) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  function handleDragStart(index: number) {
+    setDraggedIndex(index);
+  }
+
+  function handleDragOver(index: number) {
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  }
+
+  function handleDrop(index: number) {
+    if (draggedIndex === null) return;
+    onReorder(draggedIndex, index);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }
+
+  function handleDragEnd() {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }
+
   return (
     <section>
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -478,6 +529,12 @@ function VideoListSection<T extends VideoRow>({
               meta={getMeta(item)}
               vertical={isVertical(item)}
               expanded={expandedIndex === index}
+              dragging={draggedIndex === index}
+              dragOver={dragOverIndex === index && draggedIndex !== index}
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={() => handleDragOver(index)}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={handleDragEnd}
               onToggle={() => onExpand(expandedIndex === index ? null : index)}
               onRemove={() => onRemove(index)}
             >
@@ -496,6 +553,12 @@ type VideoListItemProps = {
   meta: string;
   vertical: boolean;
   expanded: boolean;
+  dragging: boolean;
+  dragOver: boolean;
+  onDragStart: () => void;
+  onDragOver: () => void;
+  onDrop: () => void;
+  onDragEnd: () => void;
   onToggle: () => void;
   onRemove: () => void;
   children: React.ReactNode;
@@ -507,6 +570,12 @@ function VideoListItem({
   meta,
   vertical,
   expanded,
+  dragging,
+  dragOver,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
   onToggle,
   onRemove,
   children,
@@ -540,13 +609,39 @@ function VideoListItem({
 
   return (
     <article
+      onDragOver={(event) => {
+        event.preventDefault();
+        onDragOver();
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDrop();
+      }}
       className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
-        expanded
-          ? "border-white/20 bg-[#121212] shadow-[0_20px_60px_-30px_rgba(255,255,255,0.15)]"
-          : "border-white/10 bg-[#0a0a0a] hover:border-white/15"
+        dragging
+          ? "scale-[0.985] border-white/25 opacity-55"
+          : dragOver
+            ? "border-white/30 bg-white/[0.03]"
+            : expanded
+              ? "border-white/20 bg-[#121212] shadow-[0_20px_60px_-30px_rgba(255,255,255,0.15)]"
+              : "border-white/10 bg-[#0a0a0a] hover:border-white/15"
       }`}
     >
       <div className="flex items-stretch gap-0">
+        <div
+          draggable
+          onDragStart={(event) => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(index));
+            onDragStart();
+          }}
+          onDragEnd={onDragEnd}
+          aria-label={`Drag to reorder ${item.title}`}
+          className="flex w-10 shrink-0 cursor-grab items-center justify-center border-r border-white/10 text-white/25 transition-colors hover:bg-white/[0.03] hover:text-white/50 active:cursor-grabbing sm:w-11"
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+
         <button
           type="button"
           onClick={onToggle}
@@ -666,6 +761,25 @@ function PlatformBadge({ label, linked }: { label: string; linked: boolean }) {
       {label}
     </span>
   );
+}
+
+function reorderList<T>(items: T[], fromIndex: number, toIndex: number) {
+  const next = [...items];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return next;
+}
+
+function adjustExpandedIndex(
+  current: number | null,
+  fromIndex: number,
+  toIndex: number,
+): number | null {
+  if (current === null) return null;
+  if (current === fromIndex) return toIndex;
+  if (fromIndex < current && toIndex >= current) return current - 1;
+  if (fromIndex > current && toIndex <= current) return current + 1;
+  return current;
 }
 
 function getPlatformLabel(type?: string, rawUrl?: string) {

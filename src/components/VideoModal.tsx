@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { SocialClipPlayer } from "@/components/SocialClipPlayer";
+import { YouTubeEmbedPlayer } from "@/components/YouTubeEmbedPlayer";
 import { getVideoAspect, type VideoSource } from "@/lib/video";
 
 export type VideoPlaylistItem = {
@@ -74,6 +75,7 @@ export function VideoModal({
     : "aspect-video max-w-5xl";
   const isSocialClip =
     current.video.type === "tiktok" || current.video.type === "instagram";
+  const isYouTube = current.video.type === "youtube";
 
   return (
     <div
@@ -162,9 +164,10 @@ export function VideoModal({
               <SocialClipPlayer
                 video={current.video}
                 title={current.title}
-                thumbnail={current.thumbnail}
                 resetKey={iframeKey}
               />
+            ) : isYouTube ? (
+              <YouTubeEmbedPlayer video={current.video} resetKey={iframeKey} />
             ) : current.video.embedUrl ? (
               <iframe
                 key={iframeKey}

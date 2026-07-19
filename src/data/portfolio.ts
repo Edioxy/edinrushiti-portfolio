@@ -2,6 +2,8 @@ import { readPortfolioContent } from "@/lib/content-store";
 import { resolveSocialThumbnail } from "@/lib/social-thumbnail";
 import type { PortfolioContentFile } from "@/lib/content-types";
 import {
+  buildYouTubeEmbedUrl,
+  getYouTubeIdFromSource,
   makePortfolioId,
   makeUgcId,
   parseVideoInput,
@@ -31,7 +33,22 @@ export async function mapContentToVideos(content: PortfolioContentFile) {
 
   const ugcItems: UgcVideo[] = await Promise.all(
     content.ugc.map(async (item, index) => {
-      const video = parseVideoInput(item.video);
+      const parsed = parseVideoInput(item.video);
+      let video = parsed;
+
+      if (parsed?.type === "youtube") {
+        const youtubeId = getYouTubeIdFromSource(parsed);
+
+        if (youtubeId) {
+          video = {
+            ...parsed,
+            variant: "short",
+            href: `https://www.youtube.com/shorts/${youtubeId}`,
+            embedUrl: buildYouTubeEmbedUrl(youtubeId, { short: true, muted: false }),
+          };
+        }
+      }
+
       const thumbnail = video
         ? await resolveSocialThumbnail(item.thumbnail, video)
         : resolveThumbnail(item.thumbnail, video);

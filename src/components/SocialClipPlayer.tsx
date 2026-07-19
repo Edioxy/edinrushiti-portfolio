@@ -1,72 +1,19 @@
 "use client";
 
-import { ExternalLink, Play } from "lucide-react";
-import { useEffect, useState } from "react";
-import { buildTikTokEmbedUrl, getTikTokVideoId, type VideoSource } from "@/lib/video";
+import { ExternalLink } from "lucide-react";
+import {
+  buildTikTokEmbedUrl,
+  getTikTokVideoId,
+  type VideoSource,
+} from "@/lib/video";
 
 type SocialClipPlayerProps = {
   video: VideoSource;
   title: string;
-  thumbnail?: string;
   resetKey: string;
 };
 
-export function SocialClipPlayer({
-  video,
-  title,
-  thumbnail,
-  resetKey,
-}: SocialClipPlayerProps) {
-  const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    setPlaying(false);
-  }, [resetKey]);
-
-  if (!playing) {
-    return (
-      <button
-        type="button"
-        onClick={() => setPlaying(true)}
-        className="group relative h-full w-full overflow-hidden rounded-2xl bg-black text-left"
-        aria-label={`Play ${title}`}
-      >
-        {thumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={thumbnail} alt={title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full min-h-[420px] w-full items-center justify-center bg-gradient-to-b from-[#161616] to-black" />
-        )}
-
-        <div className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-black/45 backdrop-blur-sm transition-transform duration-500 group-hover:scale-110">
-            <Play className="ml-1 h-6 w-6 fill-white text-white" />
-          </div>
-          <p className="text-sm tracking-wide text-white/75">Tap to play</p>
-        </div>
-
-        <div className="absolute right-4 bottom-4 left-4 flex items-center justify-between gap-3">
-          <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] tracking-[0.2em] text-white/60 uppercase backdrop-blur-sm">
-            {video.type === "tiktok" ? "TikTok" : "Instagram"}
-          </span>
-          <a
-            href={video.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(event) => event.stopPropagation()}
-            className="inline-flex items-center gap-1.5 text-[11px] text-white/50 transition-colors hover:text-white"
-          >
-            Open original
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        </div>
-      </button>
-    );
-  }
-
+export function SocialClipPlayer({ video, title, resetKey }: SocialClipPlayerProps) {
   if (video.type === "tiktok") {
     const videoId = getTikTokVideoId(video.href) ?? getTikTokVideoId(video.embedUrl ?? "");
     if (!videoId) {
@@ -88,11 +35,15 @@ export function SocialClipPlayer({
   }
 
   if (video.embedUrl) {
+    const embedUrl = video.embedUrl.includes("autoplay=1")
+      ? video.embedUrl.replace(/([?&])mute=1(?=&|$)/, "$1mute=0")
+      : `${video.embedUrl}${video.embedUrl.includes("?") ? "&" : "?"}autoplay=1&mute=0`;
+
     return (
       <div className="relative h-full w-full overflow-hidden rounded-2xl bg-black shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
         <iframe
           key={resetKey}
-          src={video.embedUrl}
+          src={embedUrl}
           title={title}
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
           allowFullScreen
@@ -113,9 +64,10 @@ function OpenLinkFallback({ href, label }: { href: string; label: string }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-full bg-white px-6 py-3 text-sm font-medium text-black"
+        className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-black"
       >
         {label}
+        <ExternalLink className="h-4 w-4" />
       </a>
     </div>
   );
