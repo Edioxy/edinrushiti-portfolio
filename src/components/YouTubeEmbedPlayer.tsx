@@ -15,7 +15,11 @@ type YouTubeMediaResponse = {
   thumbnailUrl?: string | null;
 };
 
-function useYouTubeNativeMedia(sourceUrl: string | undefined, enabled: boolean, resetKey: string) {
+function useYouTubeNativeMedia(
+  sourceUrl: string | undefined,
+  enabled: boolean,
+  resetKey: string,
+) {
   const [media, setMedia] = useState<YouTubeMediaResponse>();
   const [failed, setFailed] = useState(false);
 
@@ -59,10 +63,23 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
   const playerDomId = useId().replace(/:/g, "");
   const videoId = getYouTubeIdFromSource(video);
   const isShort = video.variant === "short";
-  const { media, failed, loading } = useYouTubeNativeMedia(video.href, isShort, resetKey);
+  const [useIframeFallback, setUseIframeFallback] = useState(false);
+  const tryNative = isShort && !useIframeFallback;
+  const { media, failed, loading } = useYouTubeNativeMedia(video.href, tryNative, resetKey);
+  const shouldUseIframe = !isShort || useIframeFallback || failed;
 
   useEffect(() => {
-    if (!videoId || isShort) return;
+    setUseIframeFallback(false);
+  }, [resetKey, video.href]);
+
+  useEffect(() => {
+    if (failed && isShort) {
+      setUseIframeFallback(true);
+    }
+  }, [failed, isShort]);
+
+  useEffect(() => {
+    if (!videoId || !shouldUseIframe) return;
 
     let cancelled = false;
 
@@ -83,6 +100,7 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
           rel: 0,
           modestbranding: 1,
           enablejsapi: 1,
+          ...(isShort ? { loop: 1, playlist: videoId } : {}),
         },
         events: {
           onReady: (event) => {
@@ -100,11 +118,11 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
       playerRef.current?.destroy();
       playerRef.current = null;
     };
-  }, [videoId, playerDomId, resetKey, isShort]);
+  }, [videoId, playerDomId, resetKey, isShort, shouldUseIframe]);
 
   if (!videoId) return null;
 
-  if (isShort && media?.videoUrl) {
+  if (tryNative && media?.videoUrl) {
     return (
       <NativeVideoPlayer
         resetKey={resetKey}
@@ -112,11 +130,13 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
         poster={media.thumbnailUrl ?? undefined}
         title={video.href}
         loop
+        muted
+        onError={() => setUseIframeFallback(true)}
       />
     );
   }
 
-  if (isShort && loading && !failed) {
+  if (tryNative && loading) {
     return <NativeVideoLoading />;
   }
 
