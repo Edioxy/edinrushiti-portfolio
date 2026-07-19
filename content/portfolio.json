@@ -148,6 +148,12 @@
       "brand": "UGC",
       "video": "/videos/hairclip.mp4",
       "thumbnail": ""
+    },
+    {
+      "title": "Skincare Ad",
+      "brand": "TanyaCare",
+      "video": "https://www.tiktok.com/@taniapro.it/video/7598921252891282709?q=ai%20ugc%20ad&t=1784484425328",
+      "thumbnail": "https://p19-common-sign.tiktokcdn-us.com/tos-alisg-p-0037/osA7BEqpcEXAmRZIq20fBFydhDhjeMIhBHBYhg~tplv-tiktokx-origin.image?dr=9636&x-expires=1784656800&x-signature=Sy4noNsTNNDm1p3NK8U6Uvvm%2Fzc%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=55bbe6a9&idc=useast5"
     }
   ]
 }
