@@ -1,13 +1,13 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { UgcVideo } from "@/lib/video";
-import { VideoModal } from "./VideoModal";
+import { VideoModal, type VideoPlaylistItem } from "./VideoModal";
 
 type UgcCardProps = {
   item: UgcVideo;
-  onPlay: (item: UgcVideo) => void;
+  onPlay: (id: string) => void;
 };
 
 function UgcCard({ item, onPlay }: UgcCardProps) {
@@ -19,7 +19,7 @@ function UgcCard({ item, onPlay }: UgcCardProps) {
         <button
           type="button"
           disabled={!hasVideo}
-          onClick={() => onPlay(item)}
+          onClick={() => onPlay(item.id)}
           className="relative block w-full overflow-hidden text-left disabled:cursor-default"
           aria-label={hasVideo ? `Play ${item.title}` : item.title}
         >
@@ -76,7 +76,23 @@ type UgcCarouselProps = {
 
 export function UgcCarousel({ items }: UgcCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeVideo, setActiveVideo] = useState<UgcVideo | null>(null);
+  const [open, setOpen] = useState(false);
+  const [startId, setStartId] = useState<string>();
+
+  const playlist = useMemo<VideoPlaylistItem[]>(
+    () =>
+      items
+        .filter((item): item is UgcVideo & { video: NonNullable<UgcVideo["video"]> } =>
+          Boolean(item.video),
+        )
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          meta: item.brand,
+          video: item.video,
+        })),
+    [items],
+  );
 
   const scroll = (direction: "left" | "right") => {
     const container = scrollRef.current;
@@ -115,17 +131,24 @@ export function UgcCarousel({ items }: UgcCarouselProps) {
           className="flex gap-5 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
         >
           {items.map((item) => (
-            <UgcCard key={item.id} item={item} onPlay={setActiveVideo} />
+            <UgcCard
+              key={item.id}
+              item={item}
+              onPlay={(id) => {
+                setStartId(id);
+                setOpen(true);
+              }}
+            />
           ))}
         </div>
       </div>
 
       <VideoModal
-        open={Boolean(activeVideo)}
-        title={activeVideo?.title ?? ""}
+        open={open}
+        playlist={playlist}
+        startId={startId}
         aspect="9/16"
-        video={activeVideo?.video}
-        onClose={() => setActiveVideo(null)}
+        onClose={() => setOpen(false)}
       />
     </>
   );

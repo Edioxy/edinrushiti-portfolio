@@ -43,37 +43,12 @@ function parseYouTubeId(url: string) {
   return null;
 }
 
-export function buildYouTubeEmbedUrl(videoId: string, origin?: string) {
-  const params = new URLSearchParams({
-    autoplay: "1",
-    rel: "0",
-    controls: "0",
-    modestbranding: "1",
-    iv_load_policy: "3",
-    cc_load_policy: "0",
-    playsinline: "1",
-    fs: "1",
-    disablekb: "0",
-  });
-
-  if (origin) {
-    params.set("origin", origin);
-  }
-
-  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+export function buildYouTubeEmbedUrl(videoId: string) {
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
 }
 
 export function buildVimeoEmbedUrl(videoId: string) {
-  const params = new URLSearchParams({
-    autoplay: "1",
-    title: "0",
-    byline: "0",
-    portrait: "0",
-    badge: "0",
-    dnt: "1",
-  });
-
-  return `https://player.vimeo.com/video/${videoId}?${params.toString()}`;
+  return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
 }
 
 export function getYouTubeIdFromSource(video: VideoSource) {
@@ -114,7 +89,7 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
     return {
       type: "youtube",
       href: `https://www.youtube.com/watch?v=${youtubeId}`,
-      embedUrl: buildYouTubeEmbedUrl(youtubeId, "https://edinrushiti.com"),
+      embedUrl: buildYouTubeEmbedUrl(youtubeId),
       thumbnail: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
     };
   }

@@ -1,5 +1,5 @@
+import { PortfolioGrid } from "@/components/PortfolioGrid";
 import type { PortfolioVideo } from "@/lib/video";
-import { VideoCard } from "./VideoCard";
 
 type ShowcaseProps = {
   items: PortfolioVideo[];
@@ -21,11 +21,7 @@ export function Showcase({ items }: ShowcaseProps) {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
-            <VideoCard key={item.id} item={item} />
-          ))}
-        </div>
+        <PortfolioGrid items={items} />
       </div>
     </section>
   );
