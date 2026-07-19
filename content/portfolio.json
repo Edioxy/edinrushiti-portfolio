@@ -17,8 +17,8 @@
       "secondaryCta": "Contact Me",
       "scrollLabel": "Scroll",
       "backgroundVideoUrl": "https://www.youtube.com/watch?v=vE9a1ZwgaY0&t=1s",
-      "backgroundStartSeconds": 2,
-      "backgroundEndSeconds": 25,
+      "backgroundStartSeconds": 22,
+      "backgroundEndSeconds": 50,
       "backgroundBlur": 62,
       "backgroundVideoOpacity": 100,
       "backgroundDarkness": 52
