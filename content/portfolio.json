@@ -1,0 +1,94 @@
+{
+  "_readme": "Managed via /admin panel. You usually do not need to edit this file manually.",
+
+  "settings": {
+    "email": "hello@edinrushiti.com",
+    "instagram": "https://instagram.com/",
+    "youtube": "https://youtube.com/",
+    "linkedin": "https://linkedin.com/"
+  },
+
+  "portfolio": [
+    {
+      "title": "Luxury Brand Campaign",
+      "category": "Commercial",
+      "description": "High-end product film with cinematic color grade and motion design.",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Automotive Launch Film",
+      "category": "Commercial",
+      "description": "Dynamic multi-shot edit with seamless transitions and sound design.",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Cinematic Short Form",
+      "category": "Cinematic",
+      "description": "Narrative-driven visual storytelling with atmospheric grading.",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Tech Product Reveal",
+      "category": "Commercial",
+      "description": "Launch film combining live action, 3D, and AI-enhanced visuals.",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Documentary Style Edit",
+      "category": "Cinematic",
+      "description": "Long-form pacing with character-driven cuts and archival integration.",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Global Ad Spot",
+      "category": "Commercial",
+      "description": "Multi-market commercial with localized variants and brand consistency.",
+      "video": "",
+      "thumbnail": ""
+    }
+  ],
+
+  "ugc": [
+    {
+      "title": "Skincare UGC Ad",
+      "brand": "Beauty Brand",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Fitness App Promo",
+      "brand": "Health & Wellness",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Food Delivery Hook",
+      "brand": "Consumer App",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Fashion Try-On Edit",
+      "brand": "Streetwear",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "SaaS Testimonial Cut",
+      "brand": "B2B Software",
+      "video": "",
+      "thumbnail": ""
+    },
+    {
+      "title": "Supplement UGC Stack",
+      "brand": "Nutrition",
+      "video": "",
+      "thumbnail": ""
+    }
+  ]
+}

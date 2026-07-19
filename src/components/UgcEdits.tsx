@@ -1,7 +1,11 @@
-import { ugcItems } from "@/data/site";
+import type { UgcVideo } from "@/lib/video";
 import { UgcCarousel } from "./UgcCarousel";
 
-export function UgcEdits() {
+type UgcEditsProps = {
+  items: UgcVideo[];
+};
+
+export function UgcEdits({ items }: UgcEditsProps) {
   return (
     <section
       id="ugc"
@@ -28,7 +32,7 @@ export function UgcEdits() {
           </div>
         </div>
 
-        <UgcCarousel items={ugcItems} />
+        <UgcCarousel items={items} />
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {[
