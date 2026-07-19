@@ -1,9 +1,10 @@
 "use client";
 
 import {
+  ChevronDown,
   ExternalLink,
-  GripVertical,
   LogOut,
+  Play,
   Plus,
   Save,
   Trash2,
@@ -18,8 +19,18 @@ import {
   type RawUgcItem,
   type SiteSettings,
 } from "@/lib/content-types";
+import { parseVideoInput, resolveThumbnail } from "@/lib/video";
 
 type Tab = "portfolio" | "ugc" | "settings";
+
+type VideoRow = {
+  title: string;
+  video?: string;
+  thumbnail?: string;
+  category?: string;
+  brand?: string;
+  description?: string;
+};
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("portfolio");
@@ -28,6 +39,8 @@ export function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [expandedPortfolio, setExpandedPortfolio] = useState<number | null>(0);
+  const [expandedUgc, setExpandedUgc] = useState<number | null>(0);
 
   useEffect(() => {
     void loadContent();
@@ -127,17 +140,33 @@ export function AdminDashboard() {
 
   function removePortfolio(index: number) {
     if (!content) return;
+
     setContent({
       ...content,
       portfolio: content.portfolio.filter((_, itemIndex) => itemIndex !== index),
+    });
+
+    setExpandedPortfolio((current) => {
+      if (current === null) return null;
+      if (current === index) return null;
+      if (current > index) return current - 1;
+      return current;
     });
   }
 
   function removeUgc(index: number) {
     if (!content) return;
+
     setContent({
       ...content,
       ugc: content.ugc.filter((_, itemIndex) => itemIndex !== index),
+    });
+
+    setExpandedUgc((current) => {
+      if (current === null) return null;
+      if (current === index) return null;
+      if (current > index) return current - 1;
+      return current;
     });
   }
 
@@ -214,52 +243,53 @@ export function AdminDashboard() {
 
         <div className="mb-8 flex flex-wrap gap-2">
           {([
-            ["portfolio", "Commercial Work"],
-            ["ugc", "UGC Edits"],
-            ["settings", "Contact & Socials"],
-          ] as const).map(([value, label]) => (
+            ["portfolio", "Commercial Work", content.portfolio.length],
+            ["ugc", "UGC Edits", content.ugc.length],
+            ["settings", "Contact & Socials", null],
+          ] as const).map(([value, label, count]) => (
             <button
               key={value}
               type="button"
               onClick={() => setTab(value)}
-              className={`rounded-full px-4 py-2 text-sm transition-colors ${
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${
                 tab === value
                   ? "bg-white text-black"
                   : "border border-white/10 text-white/60 hover:border-white/30 hover:text-white"
               }`}
             >
               {label}
+              {count !== null && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] ${
+                    tab === value ? "bg-black/10 text-black/60" : "bg-white/5 text-white/40"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
         {tab === "portfolio" && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-white/45">
-                YouTube, Vimeo, TikTok, or Instagram links. Add a thumbnail for TikTok and Instagram.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  setContent({
-                    ...content,
-                    portfolio: [...content.portfolio, createEmptyPortfolioItem()],
-                  })
-                }
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 hover:border-white/30 hover:text-white"
-              >
-                <Plus className="h-4 w-4" />
-                Add Video
-              </button>
-            </div>
-
-            {content.portfolio.map((item, index) => (
-              <EditorCard
-                key={`portfolio-${index}`}
-                title={`Portfolio #${index + 1}`}
-                onRemove={() => removePortfolio(index)}
-              >
+          <VideoListSection
+            description="Tap a project to expand and edit. YouTube, Vimeo, TikTok, Instagram, or MP4 links supported."
+            addLabel="Add Video"
+            emptyLabel="No commercial videos yet."
+            items={content.portfolio}
+            expandedIndex={expandedPortfolio}
+            onExpand={setExpandedPortfolio}
+            onAdd={() => {
+              const nextIndex = content.portfolio.length;
+              setContent({
+                ...content,
+                portfolio: [...content.portfolio, createEmptyPortfolioItem()],
+              });
+              setExpandedPortfolio(nextIndex);
+            }}
+            onRemove={removePortfolio}
+            renderExpanded={(item, index) => (
+              <>
                 <Field label="Title">
                   <Input
                     value={item.title}
@@ -278,11 +308,11 @@ export function AdminDashboard() {
                     onChange={(value) => updatePortfolio(index, { description: value })}
                   />
                 </Field>
-                <Field label="Video URL (YouTube, Vimeo, TikTok, Instagram, Drive, or /videos/file.mp4)">
+                <Field label="Video URL">
                   <Input
                     value={item.video ?? ""}
                     onChange={(value) => updatePortfolio(index, { video: value })}
-                    placeholder="https://www.youtube.com/watch?v=... or https://www.tiktok.com/..."
+                    placeholder="YouTube, Vimeo, TikTok, Instagram, Drive, or /videos/file.mp4"
                   />
                 </Field>
                 <Field label="Thumbnail URL (optional)">
@@ -292,38 +322,35 @@ export function AdminDashboard() {
                     placeholder="/thumbnails/project.jpg"
                   />
                 </Field>
-              </EditorCard>
-            ))}
-          </section>
+              </>
+            )}
+            getMeta={(item) => item.category}
+            isVertical={(item) => {
+              const parsed = parseVideoInput(item.video);
+              return parsed?.type === "tiktok" || parsed?.type === "instagram";
+            }}
+          />
         )}
 
         {tab === "ugc" && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-white/45">
-                Perfect for TikTok and Instagram Reels. Paste the share link and add a thumbnail image.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  setContent({
-                    ...content,
-                    ugc: [...content.ugc, createEmptyUgcItem()],
-                  })
-                }
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 hover:border-white/30 hover:text-white"
-              >
-                <Plus className="h-4 w-4" />
-                Add UGC
-              </button>
-            </div>
-
-            {content.ugc.map((item, index) => (
-              <EditorCard
-                key={`ugc-${index}`}
-                title={`UGC #${index + 1}`}
-                onRemove={() => removeUgc(index)}
-              >
+          <VideoListSection
+            description="Vertical edits for TikTok, Reels, and paid social. Add a thumbnail for social links."
+            addLabel="Add UGC"
+            emptyLabel="No UGC edits yet."
+            items={content.ugc}
+            expandedIndex={expandedUgc}
+            onExpand={setExpandedUgc}
+            onAdd={() => {
+              const nextIndex = content.ugc.length;
+              setContent({
+                ...content,
+                ugc: [...content.ugc, createEmptyUgcItem()],
+              });
+              setExpandedUgc(nextIndex);
+            }}
+            onRemove={removeUgc}
+            renderExpanded={(item, index) => (
+              <>
                 <Field label="Title">
                   <Input
                     value={item.title}
@@ -340,23 +367,30 @@ export function AdminDashboard() {
                   <Input
                     value={item.video ?? ""}
                     onChange={(value) => updateUgc(index, { video: value })}
-                    placeholder="https://www.tiktok.com/@you/video/... or https://www.instagram.com/reel/..."
+                    placeholder="TikTok, Instagram Reel, YouTube, or Vimeo link"
                   />
                 </Field>
-                <Field label="Thumbnail URL (optional)">
+                <Field label="Thumbnail URL (recommended for TikTok / Instagram)">
                   <Input
                     value={item.thumbnail ?? ""}
                     onChange={(value) => updateUgc(index, { thumbnail: value })}
+                    placeholder="https://..."
                   />
                 </Field>
-              </EditorCard>
-            ))}
-          </section>
+              </>
+            )}
+            getMeta={(item) => item.brand ?? "UGC"}
+            isVertical={(item) => {
+              const parsed = parseVideoInput(item.video);
+              return parsed?.type === "tiktok" || parsed?.type === "instagram";
+            }}
+          />
         )}
 
         {tab === "settings" && (
-          <section className="space-y-4">
-            <EditorCard title="Contact & Social Links">
+          <section className="rounded-2xl border border-white/10 bg-[#121212] p-5 sm:p-6">
+            <h2 className="mb-6 text-sm font-medium text-white">Contact & Social Links</h2>
+            <div className="grid gap-4">
               <Field label="Email">
                 <Input
                   value={settings.email}
@@ -381,7 +415,7 @@ export function AdminDashboard() {
                   onChange={(value) => updateSettings({ linkedin: value })}
                 />
               </Field>
-            </EditorCard>
+            </div>
           </section>
         )}
       </div>
@@ -389,36 +423,248 @@ export function AdminDashboard() {
   );
 }
 
-function EditorCard({
-  title,
-  children,
+type VideoListSectionProps<T extends VideoRow> = {
+  description: string;
+  addLabel: string;
+  emptyLabel: string;
+  items: T[];
+  expandedIndex: number | null;
+  onExpand: (index: number | null) => void;
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  renderExpanded: (item: T, index: number) => React.ReactNode;
+  getMeta: (item: T) => string;
+  isVertical: (item: T) => boolean;
+};
+
+function VideoListSection<T extends VideoRow>({
+  description,
+  addLabel,
+  emptyLabel,
+  items,
+  expandedIndex,
+  onExpand,
+  onAdd,
   onRemove,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onRemove?: () => void;
-}) {
+  renderExpanded,
+  getMeta,
+  isVertical,
+}: VideoListSectionProps<T>) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#121212] p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm text-white/70">
-          <GripVertical className="h-4 w-4 text-white/20" />
-          {title}
-        </div>
-        {onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="inline-flex items-center gap-2 rounded-full border border-red-500/20 px-3 py-1.5 text-xs text-red-300 hover:border-red-500/40"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Remove
-          </button>
-        )}
+    <section>
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-xl text-sm leading-relaxed text-white/45">{description}</p>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white"
+        >
+          <Plus className="h-4 w-4" />
+          {addLabel}
+        </button>
       </div>
-      <div className="grid gap-4">{children}</div>
+
+      {items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-white/10 px-6 py-12 text-center text-sm text-white/35">
+          {emptyLabel}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.map((item, index) => (
+            <VideoListItem
+              key={`${item.title}-${index}`}
+              item={item}
+              index={index}
+              meta={getMeta(item)}
+              vertical={isVertical(item)}
+              expanded={expandedIndex === index}
+              onToggle={() => onExpand(expandedIndex === index ? null : index)}
+              onRemove={() => onRemove(index)}
+            >
+              {renderExpanded(item, index)}
+            </VideoListItem>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+type VideoListItemProps = {
+  item: VideoRow;
+  index: number;
+  meta: string;
+  vertical: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onRemove: () => void;
+  children: React.ReactNode;
+};
+
+function VideoListItem({
+  item,
+  index,
+  meta,
+  vertical,
+  expanded,
+  onToggle,
+  onRemove,
+  children,
+}: VideoListItemProps) {
+  const parsed = parseVideoInput(item.video);
+  const preview = resolveThumbnail(item.thumbnail, parsed);
+  const platform = getPlatformLabel(parsed?.type, item.video);
+  const hasVideo = Boolean(item.video?.trim());
+
+  return (
+    <article
+      className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
+        expanded
+          ? "border-white/20 bg-[#121212] shadow-[0_20px_60px_-30px_rgba(255,255,255,0.15)]"
+          : "border-white/10 bg-[#0a0a0a] hover:border-white/15"
+      }`}
+    >
+      <div className="flex items-stretch gap-0">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-w-0 flex-1 items-center gap-4 p-4 text-left sm:gap-5 sm:p-5"
+        >
+          <VideoPreviewThumb preview={preview} vertical={vertical} title={item.title} />
+
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="text-[10px] tracking-[0.25em] text-white/35 uppercase">
+                #{index + 1}
+              </span>
+              <PlatformBadge label={platform} linked={hasVideo} />
+            </div>
+            <h3 className="truncate text-base font-medium text-white sm:text-lg">{item.title}</h3>
+            <p className="mt-1 truncate text-sm text-white/45">{meta}</p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 self-center">
+            <span className="hidden text-[11px] tracking-[0.15em] text-white/30 uppercase sm:inline">
+              {expanded ? "Close" : "Edit"}
+            </span>
+            <ChevronDown
+              className={`h-5 w-5 text-white/40 transition-transform duration-300 ${
+                expanded ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${item.title}`}
+          className="flex w-12 shrink-0 items-center justify-center border-l border-white/10 text-red-300/70 transition-colors hover:bg-red-500/10 hover:text-red-300 sm:w-14"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-white/10 p-4 sm:p-5">
+          <div className="grid gap-6 lg:grid-cols-[220px,minmax(0,1fr)]">
+            <div className="space-y-3">
+              <p className="text-[11px] tracking-[0.2em] text-white/35 uppercase">Preview</p>
+              <VideoPreviewThumb
+                preview={preview}
+                vertical={vertical}
+                title={item.title}
+                large
+              />
+              {hasVideo && (
+                <a
+                  href={parsed?.href ?? item.video}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs text-white/50 transition-colors hover:text-white"
+                >
+                  Open source link
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+
+            <div className="grid gap-4">{children}</div>
+          </div>
+        </div>
+      )}
     </article>
   );
+}
+
+function VideoPreviewThumb({
+  preview,
+  vertical,
+  title,
+  large = false,
+}: {
+  preview?: string;
+  vertical: boolean;
+  title: string;
+  large?: boolean;
+}) {
+  const sizeClass = large
+    ? vertical
+      ? "mx-auto aspect-[9/16] w-full max-w-[180px]"
+      : "aspect-video w-full"
+    : vertical
+      ? "aspect-[9/16] w-16 shrink-0 sm:w-[72px]"
+      : "aspect-video w-28 shrink-0 sm:w-32";
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-xl border border-white/10 bg-[#050505] ${sizeClass}`}
+    >
+      {preview ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={preview} alt={title} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#161616] to-black">
+          <Play className="h-5 w-5 text-white/25" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlatformBadge({ label, linked }: { label: string; linked: boolean }) {
+  return (
+    <span
+      className={`rounded-full px-2.5 py-1 text-[10px] tracking-[0.12em] uppercase ${
+        linked
+          ? "border border-white/10 bg-white/5 text-white/55"
+          : "border border-amber-500/20 bg-amber-500/10 text-amber-200/80"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function getPlatformLabel(type?: string, rawUrl?: string) {
+  if (!rawUrl?.trim()) return "No link";
+
+  switch (type) {
+    case "youtube":
+      return "YouTube";
+    case "vimeo":
+      return "Vimeo";
+    case "tiktok":
+      return "TikTok";
+    case "instagram":
+      return "Instagram";
+    case "gdrive":
+      return "Drive";
+    case "file":
+      return "MP4";
+    default:
+      return "Link";
+  }
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
