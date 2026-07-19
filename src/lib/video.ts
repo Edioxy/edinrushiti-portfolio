@@ -56,6 +56,9 @@ export function buildYouTubeEmbedUrl(
     autoplay: "1",
     rel: "0",
     playsinline: "1",
+    modestbranding: "1",
+    cc_load_policy: "0",
+    iv_load_policy: "3",
     mute: options?.muted === true ? "1" : "0",
   });
 
@@ -65,6 +68,22 @@ export function buildYouTubeEmbedUrl(
   }
 
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
+export function getYouTubeIframePlayerVars(options?: { short?: boolean; videoId?: string }) {
+  return {
+    autoplay: 1,
+    mute: 0,
+    playsinline: 1,
+    rel: 0,
+    modestbranding: 1,
+    enablejsapi: 1,
+    cc_load_policy: 0,
+    iv_load_policy: 3,
+    ...(options?.short && options.videoId
+      ? { loop: 1, playlist: options.videoId }
+      : {}),
+  };
 }
 
 export function buildVimeoEmbedUrl(videoId: string) {

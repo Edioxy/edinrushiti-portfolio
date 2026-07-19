@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { NativeVideoLoading, NativeVideoPlayer } from "@/components/NativeVideoPlayer";
 import { loadYouTubeApi, type YouTubePlayerInstance } from "@/lib/youtube-player-api";
-import { getYouTubeIdFromSource, type VideoSource } from "@/lib/video";
+import { getYouTubeIdFromSource, getYouTubeIframePlayerVars, type VideoSource } from "@/lib/video";
 
 type YouTubeEmbedPlayerProps = {
   video: VideoSource;
@@ -14,6 +14,17 @@ type YouTubeMediaResponse = {
   videoUrl?: string | null;
   thumbnailUrl?: string | null;
 };
+
+const SHORT_IFRAME_CROP_CLASS =
+  "absolute left-1/2 top-1/2 h-[142%] w-[318%] max-w-none -translate-x-1/2 -translate-y-[48%] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0";
+
+function disableYouTubeCaptions(player: YouTubePlayerInstance) {
+  try {
+    player.setOption?.("captions", "track", {});
+  } catch {
+    // Ignore if captions module is unavailable.
+  }
+}
 
 function useYouTubeNativeMedia(
   sourceUrl: string | undefined,
@@ -93,17 +104,13 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
         videoId,
         width: "100%",
         height: "100%",
-        playerVars: {
-          autoplay: 1,
-          mute: 0,
-          playsinline: 1,
-          rel: 0,
-          modestbranding: 1,
-          enablejsapi: 1,
-          ...(isShort ? { loop: 1, playlist: videoId } : {}),
-        },
+        playerVars: getYouTubeIframePlayerVars({
+          short: isShort,
+          videoId,
+        }),
         events: {
           onReady: (event) => {
+            disableYouTubeCaptions(event.target);
             event.target.unMute();
             event.target.playVideo();
           },
@@ -143,10 +150,7 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
   if (isShort) {
     return (
       <div className="relative h-full w-full overflow-hidden rounded-2xl bg-black">
-        <div
-          id={playerDomId}
-          className="absolute top-0 left-1/2 h-full w-[316%] max-w-none -translate-x-1/2 [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0"
-        />
+        <div id={playerDomId} className={SHORT_IFRAME_CROP_CLASS} />
       </div>
     );
   }

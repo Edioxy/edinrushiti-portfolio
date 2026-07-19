@@ -6,6 +6,7 @@ export type YouTubePlayerInstance = {
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   getCurrentTime: () => number;
   destroy: () => void;
+  setOption?: (module: string, option: string, value: unknown) => void;
 };
 
 declare global {
