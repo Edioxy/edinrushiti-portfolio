@@ -1,19 +1,16 @@
 {
-  "_readme": "Managed via /admin panel. You usually do not need to edit this file manually.",
-
   "settings": {
     "email": "hello@edinrushiti.com",
     "instagram": "https://instagram.com/",
     "youtube": "https://youtube.com/",
     "linkedin": "https://linkedin.com/"
   },
-
   "portfolio": [
     {
       "title": "Luxury Brand Campaign",
       "category": "Commercial",
       "description": "High-end product film with cinematic color grade and motion design.",
-      "video": "",
+      "video": "https://youtu.be/vE9a1ZwgaY0",
       "thumbnail": ""
     },
     {
@@ -52,7 +49,6 @@
       "thumbnail": ""
     }
   ],
-
   "ugc": [
     {
       "title": "Skincare UGC Ad",
