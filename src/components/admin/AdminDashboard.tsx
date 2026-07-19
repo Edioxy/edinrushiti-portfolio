@@ -26,6 +26,7 @@ import {
   type UgcSection,
 } from "@/lib/content-types";
 import { parseVideoInput, resolveThumbnail } from "@/lib/video";
+import { getVideoPreviewSrc } from "@/lib/social-thumbnail";
 
 type Tab = "portfolio" | "ugc" | "copy" | "settings";
 
@@ -784,31 +785,9 @@ function VideoListItem({
   children,
 }: VideoListItemProps) {
   const parsed = parseVideoInput(item.video);
-  const [fetchedPreview, setFetchedPreview] = useState<string>();
-  const preview = resolveThumbnail(item.thumbnail, parsed) ?? fetchedPreview;
+  const preview = getVideoPreviewSrc(item.thumbnail, parsed, item.video);
   const platform = getPlatformLabel(parsed?.type, item.video);
   const hasVideo = Boolean(item.video?.trim());
-
-  useEffect(() => {
-    if (item.thumbnail?.trim() || parsed?.type !== "tiktok" || !item.video) {
-      return;
-    }
-
-    let cancelled = false;
-
-    void fetch(`/api/oembed?url=${encodeURIComponent(item.video)}`)
-      .then((response) => response.json())
-      .then((data: { thumbnail?: string | null }) => {
-        if (!cancelled && data.thumbnail) {
-          setFetchedPreview(data.thumbnail);
-        }
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [item.thumbnail, item.video, parsed?.type]);
 
   return (
     <article

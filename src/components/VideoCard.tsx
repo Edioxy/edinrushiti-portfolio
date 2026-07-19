@@ -1,7 +1,7 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { useSocialThumbnail } from "@/hooks/useSocialThumbnail";
+import { getVideoPreviewSrc } from "@/lib/social-thumbnail";
 import type { PortfolioVideo } from "@/lib/video";
 
 type VideoCardProps = {
@@ -11,7 +11,7 @@ type VideoCardProps = {
 
 export function VideoCard({ item, onPlay }: VideoCardProps) {
   const hasVideo = Boolean(item.video);
-  const thumbnail = useSocialThumbnail(item.thumbnail, item.video);
+  const previewSrc = getVideoPreviewSrc(item.thumbnail, item.video);
 
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-white/5 bg-[#121212] transition-all duration-500 hover:border-white/15 hover:shadow-[0_24px_80px_-24px_rgba(255,255,255,0.12)]">
@@ -23,10 +23,10 @@ export function VideoCard({ item, onPlay }: VideoCardProps) {
         aria-label={hasVideo ? `Play ${item.title}` : item.title}
       >
         <div className="relative aspect-video overflow-hidden bg-[#0a0a0a]">
-          {thumbnail ? (
+          {previewSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={thumbnail}
+              src={previewSrc}
               alt={item.title}
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"

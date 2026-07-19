@@ -1,5 +1,26 @@
 import type { PortfolioContentFile } from "@/lib/content-types";
-import { normalizeTikTokUrl, parseVideoInput, type VideoSource } from "@/lib/video";
+import {
+  getTikTokVideoId,
+  normalizeTikTokUrl,
+  parseVideoInput,
+  type VideoSource,
+} from "@/lib/video";
+
+export function getVideoPreviewSrc(
+  thumbnail: string | undefined,
+  video?: VideoSource,
+  rawVideoUrl?: string,
+) {
+  const manual = thumbnail?.trim();
+  if (manual) return manual;
+
+  const videoUrl = rawVideoUrl?.trim() || video?.href;
+  if (video?.type === "tiktok" && videoUrl) {
+    return `/api/thumbnail?url=${encodeURIComponent(videoUrl)}`;
+  }
+
+  return undefined;
+}
 
 type TikTokOEmbed = {
   thumbnail_url?: string;
@@ -9,15 +30,70 @@ type FetchTikTokThumbnailOptions = {
   revalidate?: number | false;
 };
 
+const BROWSER_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+
 const TIKTOK_FETCH_HEADERS = {
-  Accept: "application/json",
-  "User-Agent":
-    "Mozilla/5.0 (compatible; EdinRushitiPortfolio/1.0; +https://edinrushiti.com)",
+  Accept: "application/json,text/plain,*/*",
+  "Accept-Language": "en-US,en;q=0.9",
+  "User-Agent": BROWSER_USER_AGENT,
 };
 
-export async function fetchTikTokThumbnail(
+const TIKTOK_PAGE_HEADERS = {
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "User-Agent": BROWSER_USER_AGENT,
+};
+
+function decodeEscapedUrl(value: string) {
+  return value
+    .replace(/\\u002F/gi, "/")
+    .replace(/\\\//g, "/")
+    .replace(/&amp;/g, "&");
+}
+
+function extractTikTokCoverFromHtml(html: string) {
+  const patterns = [
+    /"originCover":"(https:\\u002F\\u002F[^"]+)"/,
+    /"cover":"(https:\\u002F\\u002F[^"]+)"/,
+    /"dynamicCover":"(https:\\u002F\\u002F[^"]+)"/,
+    /"thumbnail_url":"(https:\\u002F\\u002F[^"]+)"/,
+    /property="og:image"\s+content="([^"]+)"/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match?.[1]) {
+      const decoded = decodeEscapedUrl(match[1]).trim();
+      if (decoded.startsWith("http")) {
+        return decoded;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+async function fetchTikTokThumbnailFromPage(videoUrl: string) {
+  try {
+    const normalizedUrl = normalizeTikTokUrl(videoUrl);
+    const response = await fetch(normalizedUrl, {
+      cache: "no-store",
+      headers: TIKTOK_PAGE_HEADERS,
+    });
+
+    if (!response.ok) return undefined;
+
+    const html = await response.text();
+    return extractTikTokCoverFromHtml(html);
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchTikTokThumbnailFromOEmbed(
   videoUrl: string,
-  options: FetchTikTokThumbnailOptions = {},
+  options: FetchTikTokThumbnailOptions,
 ) {
   try {
     const normalizedUrl = normalizeTikTokUrl(videoUrl);
@@ -43,6 +119,23 @@ export async function fetchTikTokThumbnail(
   } catch {
     return undefined;
   }
+}
+
+export async function fetchTikTokThumbnail(
+  videoUrl: string,
+  options: FetchTikTokThumbnailOptions = {},
+) {
+  const normalizedUrl = normalizeTikTokUrl(videoUrl);
+  if (!getTikTokVideoId(normalizedUrl)) {
+    return undefined;
+  }
+
+  const oEmbedThumbnail = await fetchTikTokThumbnailFromOEmbed(normalizedUrl, options);
+  if (oEmbedThumbnail) {
+    return oEmbedThumbnail;
+  }
+
+  return fetchTikTokThumbnailFromPage(normalizedUrl);
 }
 
 export async function resolveSocialThumbnail(
