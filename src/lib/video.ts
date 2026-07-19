@@ -1,6 +1,6 @@
 export type VideoSource = {
   type: "youtube" | "vimeo" | "tiktok" | "instagram" | "gdrive" | "file" | "link";
-  variant?: "short" | "standard";
+  variant?: "short" | "standard" | "reel";
   embedUrl?: string;
   href: string;
   thumbnail?: string;
@@ -119,9 +119,25 @@ export function normalizeTikTokUrl(input: string) {
   return `https://www.tiktok.com/video/${videoId}`;
 }
 
-export function buildInstagramEmbedUrl(shortcode: string, kind: "reel" | "post") {
+export function buildInstagramEmbedUrl(
+  shortcode: string,
+  kind: "reel" | "post" = "reel",
+  options?: { autoplay?: boolean; muted?: boolean },
+) {
   const path = kind === "reel" ? "reel" : "p";
-  return `https://www.instagram.com/${path}/${shortcode}/embed?autoplay=1&mute=0`;
+  const params = new URLSearchParams();
+
+  if (options?.autoplay) {
+    params.set("autoplay", "1");
+  }
+
+  if (options?.muted === false) {
+    params.set("mute", "0");
+  }
+
+  params.set("hidecaption", "1");
+
+  return `https://www.instagram.com/${path}/${shortcode}/embed?${params.toString()}`;
 }
 
 export function getVideoAspect(video: VideoSource): "16/9" | "9/16" {
@@ -193,6 +209,14 @@ function parseInstagramShortcode(url: string) {
   return null;
 }
 
+export function getInstagramShortcode(url: string) {
+  return parseInstagramShortcode(url)?.shortcode ?? null;
+}
+
+export function getInstagramKind(url: string): "reel" | "post" {
+  return parseInstagramShortcode(url)?.kind ?? "post";
+}
+
 function parseGoogleDriveId(url: string) {
   const patterns = [
     /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
@@ -253,8 +277,12 @@ export function parseVideoInput(input?: string): VideoSource | undefined {
 
     return {
       type: "instagram",
+      variant: instagram.kind === "reel" ? "reel" : "standard",
       href: `https://www.instagram.com/${path}/${instagram.shortcode}/`,
-      embedUrl: buildInstagramEmbedUrl(instagram.shortcode, instagram.kind),
+      embedUrl: buildInstagramEmbedUrl(instagram.shortcode, instagram.kind, {
+        autoplay: true,
+        muted: false,
+      }),
     };
   }
 

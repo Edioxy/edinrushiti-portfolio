@@ -24,7 +24,7 @@ export function VideoCard({ item, onPlay }: VideoCardProps) {
         aria-label={hasVideo ? `Play ${item.title}` : item.title}
       >
         <div className="relative aspect-video overflow-hidden bg-[#0a0a0a]">
-          {item.thumbnail || item.video?.type === "tiktok" ? (
+          {(item.thumbnail || isVertical) ? (
             <div className={`h-full w-full ${isVertical ? "mx-auto max-w-[56%]" : ""}`}>
               <SocialVideoPreview
                 title={item.title}

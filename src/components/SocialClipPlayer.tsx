@@ -1,8 +1,10 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { InstagramReelPlayer } from "@/components/InstagramReelPlayer";
 import {
   buildTikTokEmbedUrl,
+  getInstagramShortcode,
   getTikTokVideoId,
   type VideoSource,
 } from "@/lib/video";
@@ -32,6 +34,16 @@ export function SocialClipPlayer({ video, title, resetKey }: SocialClipPlayerPro
         />
       </div>
     );
+  }
+
+  if (video.type === "instagram") {
+    const shortcode =
+      getInstagramShortcode(video.href) ?? getInstagramShortcode(video.embedUrl ?? "");
+    if (!shortcode) {
+      return <OpenLinkFallback href={video.href} label="Open on Instagram" />;
+    }
+
+    return <InstagramReelPlayer video={video} title={title} resetKey={resetKey} />;
   }
 
   if (video.embedUrl) {

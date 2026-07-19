@@ -1,7 +1,8 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { InstagramReelPreview } from "@/components/InstagramReelPlayer";
 import { buildTikTokEmbedUrl, getTikTokVideoId, type VideoSource } from "@/lib/video";
 
 type SocialVideoPreviewProps = {
@@ -23,16 +24,45 @@ export function SocialVideoPreview({
 }: SocialVideoPreviewProps) {
   const previewSrc = thumbnail?.trim();
   const [imageFailed, setImageFailed] = useState(false);
+  const [fetchedThumbnail, setFetchedThumbnail] = useState<string>();
   const tiktokId =
     video?.type === "tiktok"
       ? getTikTokVideoId(video.href) ?? getTikTokVideoId(rawVideoUrl ?? "")
       : null;
+  const sourceUrl = rawVideoUrl?.trim() || video?.href;
+  const resolvedThumbnail = previewSrc || fetchedThumbnail;
 
-  if (previewSrc && !imageFailed) {
+  useEffect(() => {
+    setImageFailed(false);
+    setFetchedThumbnail(undefined);
+  }, [previewSrc, sourceUrl, video?.type]);
+
+  useEffect(() => {
+    if (previewSrc || video?.type !== "instagram" || !sourceUrl) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void fetch(`/api/oembed?url=${encodeURIComponent(sourceUrl)}`)
+      .then((response) => response.json())
+      .then((data: { thumbnail?: string | null }) => {
+        if (!cancelled && data.thumbnail) {
+          setFetchedThumbnail(data.thumbnail);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [previewSrc, sourceUrl, video?.type]);
+
+  if (resolvedThumbnail && !imageFailed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={previewSrc}
+        src={resolvedThumbnail}
         alt={title}
         loading="lazy"
         onError={() => setImageFailed(true)}
@@ -48,8 +78,14 @@ export function SocialVideoPreview({
         title={title}
         loading="lazy"
         allow="encrypted-media; picture-in-picture"
-        className="h-full w-full border-0 bg-black pointer-events-none"
+        className="pointer-events-none h-full w-full border-0 bg-black"
       />
+    );
+  }
+
+  if (video?.type === "instagram" || /instagram\.com/.test(rawVideoUrl ?? "")) {
+    return (
+      <InstagramReelPreview video={video} title={title} rawVideoUrl={rawVideoUrl} />
     );
   }
 

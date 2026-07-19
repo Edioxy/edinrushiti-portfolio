@@ -10,6 +10,10 @@ type TikTokOEmbed = {
   thumbnail_url?: string;
 };
 
+type InstagramOEmbed = {
+  thumbnail_url?: string;
+};
+
 type FetchTikTokThumbnailOptions = {
   revalidate?: number | false;
 };
@@ -122,6 +126,75 @@ export async function fetchTikTokThumbnail(
   return fetchTikTokThumbnailFromPage(normalizedUrl);
 }
 
+function extractOgImageFromHtml(html: string) {
+  const match = html.match(/property="og:image"\s+content="([^"]+)"/);
+  return match?.[1]?.replace(/&amp;/g, "&").trim();
+}
+
+async function fetchInstagramThumbnailFromOEmbed(postUrl: string) {
+  try {
+    const response = await fetch(
+      `https://api.instagram.com/oembed?url=${encodeURIComponent(postUrl)}`,
+      {
+        cache: "no-store",
+        headers: TIKTOK_FETCH_HEADERS,
+      },
+    );
+
+    if (!response.ok) return undefined;
+
+    const text = await response.text();
+    if (!text.trim()) return undefined;
+
+    const data = JSON.parse(text) as InstagramOEmbed;
+    return data.thumbnail_url?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchInstagramThumbnailFromPage(postUrl: string) {
+  try {
+    const response = await fetch(postUrl, {
+      cache: "no-store",
+      headers: TIKTOK_PAGE_HEADERS,
+    });
+
+    if (!response.ok) return undefined;
+
+    const html = await response.text();
+    return extractOgImageFromHtml(html);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function fetchInstagramThumbnail(postUrl: string) {
+  const url = postUrl.trim();
+  if (!/instagram\.com/.test(url)) {
+    return undefined;
+  }
+
+  const oEmbedThumbnail = await fetchInstagramThumbnailFromOEmbed(url);
+  if (oEmbedThumbnail) {
+    return oEmbedThumbnail;
+  }
+
+  return fetchInstagramThumbnailFromPage(url);
+}
+
+export async function fetchSocialThumbnail(video: VideoSource) {
+  if (video.type === "tiktok") {
+    return fetchTikTokThumbnail(video.href, { revalidate: false });
+  }
+
+  if (video.type === "instagram") {
+    return fetchInstagramThumbnail(video.href);
+  }
+
+  return undefined;
+}
+
 export async function resolveSocialThumbnail(
   manualThumbnail: string | undefined,
   video?: VideoSource,
@@ -132,6 +205,10 @@ export async function resolveSocialThumbnail(
 
   if (video?.type === "tiktok") {
     return fetchTikTokThumbnail(video.href, { revalidate: 300 });
+  }
+
+  if (video?.type === "instagram") {
+    return fetchInstagramThumbnail(video.href);
   }
 
   return undefined;
@@ -148,11 +225,11 @@ async function enrichItemThumbnail<T extends ThumbnailableItem>(item: T): Promis
   }
 
   const parsed = parseVideoInput(item.video);
-  if (parsed?.type !== "tiktok") {
+  if (!parsed || (parsed.type !== "tiktok" && parsed.type !== "instagram")) {
     return item;
   }
 
-  const thumbnail = await fetchTikTokThumbnail(parsed.href, { revalidate: false });
+  const thumbnail = await fetchSocialThumbnail(parsed);
   if (!thumbnail) {
     return item;
   }
