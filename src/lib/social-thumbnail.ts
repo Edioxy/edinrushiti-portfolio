@@ -1,5 +1,6 @@
 import type { PortfolioContentFile } from "@/lib/content-types";
 import { fetchInstagramEmbedMedia } from "@/lib/instagram-media";
+import { fetchTikTokEmbedMedia } from "@/lib/tiktok-media";
 import {
   getInstagramShortcode,
   getTikTokVideoId,
@@ -118,6 +119,11 @@ export async function fetchTikTokThumbnail(
   const normalizedUrl = normalizeTikTokUrl(videoUrl);
   if (!getTikTokVideoId(normalizedUrl)) {
     return undefined;
+  }
+
+  const embedMedia = await fetchTikTokEmbedMedia(normalizedUrl);
+  if (embedMedia?.thumbnailUrl) {
+    return embedMedia.thumbnailUrl;
   }
 
   const oEmbedThumbnail = await fetchTikTokThumbnailFromOEmbed(normalizedUrl, options);

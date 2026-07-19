@@ -2,10 +2,9 @@
 
 import { ExternalLink } from "lucide-react";
 import { InstagramReelPlayer } from "@/components/InstagramReelPlayer";
+import { TikTokNativePlayer } from "@/components/TikTokNativePlayer";
 import {
-  buildTikTokEmbedUrl,
   getInstagramShortcode,
-  getTikTokVideoId,
   type VideoSource,
 } from "@/lib/video";
 
@@ -17,23 +16,7 @@ type SocialClipPlayerProps = {
 
 export function SocialClipPlayer({ video, title, resetKey }: SocialClipPlayerProps) {
   if (video.type === "tiktok") {
-    const videoId = getTikTokVideoId(video.href) ?? getTikTokVideoId(video.embedUrl ?? "");
-    if (!videoId) {
-      return <OpenLinkFallback href={video.href} label="Open on TikTok" />;
-    }
-
-    return (
-      <div className="relative h-full w-full overflow-hidden rounded-2xl bg-black shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
-        <iframe
-          key={resetKey}
-          src={buildTikTokEmbedUrl(videoId, true)}
-          title={title}
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-          allowFullScreen
-          className="h-full w-full border-0 bg-black"
-        />
-      </div>
-    );
+    return <TikTokNativePlayer video={video} title={title} resetKey={resetKey} />;
   }
 
   if (video.type === "instagram") {

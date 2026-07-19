@@ -3,7 +3,8 @@
 import { Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { InstagramReelPreview } from "@/components/InstagramReelPlayer";
-import { buildTikTokEmbedUrl, getTikTokVideoId, type VideoSource } from "@/lib/video";
+import { TikTokNativePreview } from "@/components/TikTokNativePlayer";
+import { type VideoSource } from "@/lib/video";
 
 type SocialVideoPreviewProps = {
   title: string;
@@ -25,12 +26,10 @@ export function SocialVideoPreview({
   const previewSrc = thumbnail?.trim();
   const [imageFailed, setImageFailed] = useState(false);
   const [fetchedThumbnail, setFetchedThumbnail] = useState<string>();
-  const tiktokId =
-    video?.type === "tiktok"
-      ? getTikTokVideoId(video.href) ?? getTikTokVideoId(rawVideoUrl ?? "")
-      : null;
   const sourceUrl = rawVideoUrl?.trim() || video?.href;
   const resolvedThumbnail = previewSrc || fetchedThumbnail;
+  const isTikTok = video?.type === "tiktok" || /tiktok\.com/.test(sourceUrl ?? "");
+  const isInstagram = video?.type === "instagram" || /instagram\.com/.test(sourceUrl ?? "");
 
   useEffect(() => {
     setImageFailed(false);
@@ -42,18 +41,24 @@ export function SocialVideoPreview({
       return;
     }
 
-    if (video?.type !== "instagram" && !/instagram\.com/.test(sourceUrl)) {
+    const mediaEndpoint = isTikTok
+      ? `/api/tiktok/media?url=${encodeURIComponent(sourceUrl)}`
+      : isInstagram
+        ? `/api/instagram/media?url=${encodeURIComponent(sourceUrl)}`
+        : null;
+
+    if (!mediaEndpoint) {
       return;
     }
 
     let cancelled = false;
 
-    void fetch(`/api/instagram/media?url=${encodeURIComponent(sourceUrl)}`)
+    void fetch(mediaEndpoint)
       .then((response) => (response.ok ? response.json() : Promise.reject(response)))
       .then((data: { thumbnail?: string | null; thumbnailUrl?: string | null }) => {
-        const thumbnail = data.thumbnailUrl ?? data.thumbnail;
-        if (!cancelled && thumbnail) {
-          setFetchedThumbnail(thumbnail);
+        const nextThumbnail = data.thumbnailUrl ?? data.thumbnail;
+        if (!cancelled && nextThumbnail) {
+          setFetchedThumbnail(nextThumbnail);
         }
       })
       .catch(() => undefined);
@@ -61,7 +66,7 @@ export function SocialVideoPreview({
     return () => {
       cancelled = true;
     };
-  }, [previewSrc, sourceUrl, video?.type]);
+  }, [previewSrc, sourceUrl, isInstagram, isTikTok]);
 
   if (resolvedThumbnail && !imageFailed) {
     return (
@@ -76,22 +81,12 @@ export function SocialVideoPreview({
     );
   }
 
-  if (tiktokId) {
-    return (
-      <iframe
-        src={buildTikTokEmbedUrl(tiktokId, false)}
-        title={title}
-        loading="lazy"
-        allow="encrypted-media; picture-in-picture"
-        className="pointer-events-none h-full w-full border-0 bg-black"
-      />
-    );
+  if (isTikTok) {
+    return <TikTokNativePreview video={video} title={title} rawVideoUrl={rawVideoUrl} />;
   }
 
-  if (video?.type === "instagram" || /instagram\.com/.test(rawVideoUrl ?? "")) {
-    return (
-      <InstagramReelPreview video={video} title={title} rawVideoUrl={rawVideoUrl} />
-    );
+  if (isInstagram) {
+    return <InstagramReelPreview video={video} title={title} rawVideoUrl={rawVideoUrl} />;
   }
 
   return (

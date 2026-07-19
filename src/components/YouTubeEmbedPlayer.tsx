@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { NativeVideoLoading, NativeVideoPlayer } from "@/components/NativeVideoPlayer";
 import { loadYouTubeApi, type YouTubePlayerInstance } from "@/lib/youtube-player-api";
 import { getYouTubeIdFromSource, type VideoSource } from "@/lib/video";
 
@@ -9,14 +10,59 @@ type YouTubeEmbedPlayerProps = {
   resetKey: string;
 };
 
+type YouTubeMediaResponse = {
+  videoUrl?: string | null;
+  thumbnailUrl?: string | null;
+};
+
+function useYouTubeNativeMedia(sourceUrl: string | undefined, enabled: boolean, resetKey: string) {
+  const [media, setMedia] = useState<YouTubeMediaResponse>();
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setMedia(undefined);
+    setFailed(false);
+
+    if (!enabled || !sourceUrl) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void fetch(`/api/youtube/media?url=${encodeURIComponent(sourceUrl)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(response)))
+      .then((data: YouTubeMediaResponse) => {
+        if (!cancelled) {
+          if (data.videoUrl) {
+            setMedia(data);
+          } else {
+            setFailed(true);
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFailed(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, sourceUrl, resetKey]);
+
+  return { media, failed, loading: enabled && !media && !failed };
+}
+
 export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps) {
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const playerDomId = useId().replace(/:/g, "");
   const videoId = getYouTubeIdFromSource(video);
   const isShort = video.variant === "short";
+  const { media, failed, loading } = useYouTubeNativeMedia(video.href, isShort, resetKey);
 
   useEffect(() => {
-    if (!videoId) return;
+    if (!videoId || isShort) return;
 
     let cancelled = false;
 
@@ -37,7 +83,6 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
           rel: 0,
           modestbranding: 1,
           enablejsapi: 1,
-          ...(isShort ? { loop: 1, playlist: videoId } : {}),
         },
         events: {
           onReady: (event) => {
@@ -58,6 +103,22 @@ export function YouTubeEmbedPlayer({ video, resetKey }: YouTubeEmbedPlayerProps)
   }, [videoId, playerDomId, resetKey, isShort]);
 
   if (!videoId) return null;
+
+  if (isShort && media?.videoUrl) {
+    return (
+      <NativeVideoPlayer
+        resetKey={resetKey}
+        src={media.videoUrl}
+        poster={media.thumbnailUrl ?? undefined}
+        title={video.href}
+        loop
+      />
+    );
+  }
+
+  if (isShort && loading && !failed) {
+    return <NativeVideoLoading />;
+  }
 
   if (isShort) {
     return (
