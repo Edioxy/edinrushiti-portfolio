@@ -14,15 +14,20 @@ import { useEffect, useState } from "react";
 import {
   createEmptyPortfolioItem,
   createEmptyUgcItem,
+  DEFAULT_SECTIONS,
   DEFAULT_SETTINGS,
+  type HeroSection,
   type PortfolioContentFile,
   type RawPortfolioItem,
   type RawUgcItem,
+  type SectionBlock,
+  type SiteSections,
   type SiteSettings,
+  type UgcSection,
 } from "@/lib/content-types";
 import { parseVideoInput, resolveThumbnail } from "@/lib/video";
 
-type Tab = "portfolio" | "ugc" | "settings";
+type Tab = "portfolio" | "ugc" | "copy" | "settings";
 
 type VideoRow = {
   title: string;
@@ -58,6 +63,7 @@ export function AdminDashboard() {
       setContent({
         ...data,
         settings: { ...DEFAULT_SETTINGS, ...data.settings },
+        sections: { ...DEFAULT_SECTIONS, ...data.sections },
       });
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Load failed.");
@@ -139,6 +145,78 @@ export function AdminDashboard() {
     });
   }
 
+  function updateSections(patch: Partial<SiteSections>) {
+    if (!content) return;
+
+    const current = { ...DEFAULT_SECTIONS, ...content.sections };
+
+    setContent({
+      ...content,
+      sections: { ...current, ...patch },
+    });
+  }
+
+  function updateHeroSection(patch: Partial<HeroSection>) {
+    if (!content) return;
+
+    const current = { ...DEFAULT_SECTIONS, ...content.sections };
+
+    setContent({
+      ...content,
+      sections: {
+        ...current,
+        hero: { ...current.hero, ...patch },
+      },
+    });
+  }
+
+  function updateSectionBlock(
+    key: "portfolio" | "tools" | "contact",
+    patch: Partial<SectionBlock>,
+  ) {
+    if (!content) return;
+
+    const current = { ...DEFAULT_SECTIONS, ...content.sections };
+
+    setContent({
+      ...content,
+      sections: {
+        ...current,
+        [key]: { ...current[key], ...patch },
+      },
+    });
+  }
+
+  function updateUgcSection(patch: Partial<UgcSection>) {
+    if (!content) return;
+
+    const current = { ...DEFAULT_SECTIONS, ...content.sections };
+
+    setContent({
+      ...content,
+      sections: {
+        ...current,
+        ugc: { ...current.ugc, ...patch },
+      },
+    });
+  }
+
+  function updateUgcHighlight(index: number, value: string) {
+    if (!content) return;
+
+    const current = { ...DEFAULT_SECTIONS, ...content.sections };
+    const highlights = [...current.ugc.highlights] as [string, string, string];
+    highlights[index] = value;
+
+    setContent({
+      ...content,
+      sections: {
+        ...current,
+        ugc: { ...current.ugc, highlights },
+      },
+    });
+  }
+
   function removePortfolio(index: number) {
     if (!content) return;
 
@@ -210,6 +288,7 @@ export function AdminDashboard() {
   }
 
   const settings = { ...DEFAULT_SETTINGS, ...content.settings };
+  const sections = { ...DEFAULT_SECTIONS, ...content.sections };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -268,6 +347,7 @@ export function AdminDashboard() {
           {([
             ["portfolio", "Commercial Work", content.portfolio.length],
             ["ugc", "UGC Edits", content.ugc.length],
+            ["copy", "Page Copy", null],
             ["settings", "Contact & Socials", null],
           ] as const).map(([value, label, count]) => (
             <button
@@ -410,6 +490,129 @@ export function AdminDashboard() {
               return parsed?.type === "tiktok" || parsed?.type === "instagram";
             }}
           />
+        )}
+
+        {tab === "copy" && (
+          <div className="space-y-5">
+            <p className="max-w-2xl text-sm leading-relaxed text-white/45">
+              Edit the headings, descriptions, and button labels shown on your public site.
+              Save changes to publish updates.
+            </p>
+
+            <CopySection title="Site Header & Footer">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Site Name">
+                  <Input
+                    value={sections.siteName}
+                    onChange={(value) => updateSections({ siteName: value })}
+                  />
+                </Field>
+                <Field label="Header Button">
+                  <Input
+                    value={sections.headerCta}
+                    onChange={(value) => updateSections({ headerCta: value })}
+                  />
+                </Field>
+              </div>
+            </CopySection>
+
+            <CopySection title="Hero">
+              <div className="grid gap-4">
+                <Field label="Eyebrow">
+                  <Input
+                    value={sections.hero.eyebrow}
+                    onChange={(value) => updateHeroSection({ eyebrow: value })}
+                  />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Headline Line 1">
+                    <Input
+                      value={sections.hero.headingLine1}
+                      onChange={(value) => updateHeroSection({ headingLine1: value })}
+                    />
+                  </Field>
+                  <Field label="Headline Line 2">
+                    <Input
+                      value={sections.hero.headingLine2}
+                      onChange={(value) => updateHeroSection({ headingLine2: value })}
+                    />
+                  </Field>
+                </div>
+                <Field label="Description">
+                  <Textarea
+                    value={sections.hero.description}
+                    onChange={(value) => updateHeroSection({ description: value })}
+                  />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field label="Primary Button">
+                    <Input
+                      value={sections.hero.primaryCta}
+                      onChange={(value) => updateHeroSection({ primaryCta: value })}
+                    />
+                  </Field>
+                  <Field label="Secondary Button">
+                    <Input
+                      value={sections.hero.secondaryCta}
+                      onChange={(value) => updateHeroSection({ secondaryCta: value })}
+                    />
+                  </Field>
+                  <Field label="Scroll Label">
+                    <Input
+                      value={sections.hero.scrollLabel}
+                      onChange={(value) => updateHeroSection({ scrollLabel: value })}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </CopySection>
+
+            <CopySection title="Commercial Work Section">
+              <SectionBlockFields
+                values={sections.portfolio}
+                onChange={(patch) => updateSectionBlock("portfolio", patch)}
+              />
+            </CopySection>
+
+            <CopySection title="UGC Section">
+              <SectionBlockFields
+                values={sections.ugc}
+                onChange={(patch) => updateUgcSection(patch)}
+              />
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field label="Badge Label">
+                  <Input
+                    value={sections.ugc.badge}
+                    onChange={(value) => updateUgcSection({ badge: value })}
+                  />
+                </Field>
+              </div>
+              <div className="mt-4 grid gap-4">
+                {sections.ugc.highlights.map((highlight, index) => (
+                  <Field key={index} label={`Highlight ${index + 1}`}>
+                    <Input
+                      value={highlight}
+                      onChange={(value) => updateUgcHighlight(index, value)}
+                    />
+                  </Field>
+                ))}
+              </div>
+            </CopySection>
+
+            <CopySection title="Technical Arsenal Section">
+              <SectionBlockFields
+                values={sections.tools}
+                onChange={(patch) => updateSectionBlock("tools", patch)}
+              />
+            </CopySection>
+
+            <CopySection title="Contact Section">
+              <SectionBlockFields
+                values={sections.contact}
+                onChange={(patch) => updateSectionBlock("contact", patch)}
+              />
+            </CopySection>
+          </div>
         )}
 
         {tab === "settings" && (
@@ -801,6 +1004,40 @@ function getPlatformLabel(type?: string, rawUrl?: string) {
     default:
       return "Link";
   }
+}
+
+function CopySection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-white/10 bg-[#121212] p-5 sm:p-6">
+      <h2 className="mb-5 text-sm font-medium text-white">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function SectionBlockFields({
+  values,
+  onChange,
+}: {
+  values: SectionBlock;
+  onChange: (patch: Partial<SectionBlock>) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      <Field label="Eyebrow">
+        <Input value={values.eyebrow} onChange={(value) => onChange({ eyebrow: value })} />
+      </Field>
+      <Field label="Heading">
+        <Input value={values.heading} onChange={(value) => onChange({ heading: value })} />
+      </Field>
+      <Field label="Description">
+        <Textarea
+          value={values.description}
+          onChange={(value) => onChange({ description: value })}
+        />
+      </Field>
+    </div>
+  );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

@@ -10,19 +10,19 @@ import { getPortfolioVideos } from "@/data/portfolio";
 export const revalidate = 30;
 
 export default async function Home() {
-  const { portfolioItems, ugcItems, settings } = await getPortfolioVideos();
+  const { portfolioItems, ugcItems, settings, sections } = await getPortfolioVideos();
 
   return (
     <>
-      <Header />
+      <Header siteName={sections?.siteName} headerCta={sections?.headerCta} />
       <main>
-        <Hero />
-        <Showcase items={portfolioItems} />
-        <UgcEdits items={ugcItems} />
-        <TechnicalArsenal />
-        <Contact settings={settings} />
+        <Hero sections={sections} />
+        <Showcase items={portfolioItems} sections={sections} />
+        <UgcEdits items={ugcItems} sections={sections} />
+        <TechnicalArsenal sections={sections} />
+        <Contact settings={settings} sections={sections} />
       </main>
-      <Footer />
+      <Footer siteName={sections?.siteName} />
     </>
   );
 }

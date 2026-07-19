@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { siteConfig } from "@/data/site";
+import { DEFAULT_SECTIONS } from "@/lib/content-types";
 
 const navLinks = [
   { label: "Work", href: "#work" },
@@ -10,7 +10,15 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-export function Header() {
+type HeaderProps = {
+  siteName?: string;
+  headerCta?: string;
+};
+
+export function Header({
+  siteName = DEFAULT_SECTIONS.siteName,
+  headerCta = DEFAULT_SECTIONS.headerCta,
+}: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -33,7 +41,7 @@ export function Header() {
           href="#"
           className="text-sm font-medium tracking-[0.2em] text-white uppercase transition-opacity hover:opacity-70"
         >
-          {siteConfig.name}
+          {siteName}
         </a>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -52,7 +60,7 @@ export function Header() {
           href="#contact"
           className="rounded-full border border-white/15 px-4 py-2 text-[13px] tracking-wide text-white transition-all hover:border-white/40 hover:bg-white/5"
         >
-          Book a Project
+          {headerCta}
         </a>
       </div>
     </header>

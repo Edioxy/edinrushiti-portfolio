@@ -1,6 +1,6 @@
 import { readPortfolioContent } from "@/lib/content-store";
 import { resolveSocialThumbnail } from "@/lib/social-thumbnail";
-import type { PortfolioContentFile } from "@/lib/content-types";
+import { DEFAULT_SECTIONS, type PortfolioContentFile } from "@/lib/content-types";
 import {
   buildYouTubeEmbedUrl,
   getYouTubeIdFromSource,
@@ -63,7 +63,12 @@ export async function mapContentToVideos(content: PortfolioContentFile) {
     }),
   );
 
-  return { portfolioItems, ugcItems, settings: content.settings };
+  return {
+    portfolioItems,
+    ugcItems,
+    settings: content.settings,
+    sections: content.sections ?? DEFAULT_SECTIONS,
+  };
 }
 
 export async function getPortfolioVideos() {

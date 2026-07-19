@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Mail } from "lucide-react";
 import { FormEvent, useState } from "react";
-import { DEFAULT_SETTINGS, type SiteSettings } from "@/lib/content-types";
+import { DEFAULT_SECTIONS, DEFAULT_SETTINGS, type SiteSections, type SiteSettings } from "@/lib/content-types";
 import { siteConfig } from "@/data/site";
 
 const socialIcons = {
@@ -30,11 +30,13 @@ const socialIcons = {
 
 type ContactProps = {
   settings?: SiteSettings;
+  sections?: SiteSections;
 };
 
-export function Contact({ settings }: ContactProps) {
+export function Contact({ settings, sections = DEFAULT_SECTIONS }: ContactProps) {
   const contactSettings = { ...DEFAULT_SETTINGS, ...settings };
   const contactEmail = contactSettings.email || siteConfig.email;
+  const { contact } = sections;
 
   const socialLinks = [
     { label: "Instagram", href: contactSettings.instagram, icon: socialIcons.Instagram },
@@ -68,15 +70,13 @@ export function Contact({ settings }: ContactProps) {
           <div className="grid lg:grid-cols-2">
             <div className="border-b border-white/5 p-8 sm:p-12 lg:border-r lg:border-b-0">
               <p className="mb-4 text-[11px] tracking-[0.35em] text-white/35 uppercase">
-                Contact
+                {contact.eyebrow}
               </p>
               <h2 className="text-3xl font-light tracking-tight text-white sm:text-4xl">
-                Let&apos;s Build Your Next Visual
+                {contact.heading}
               </h2>
               <p className="mt-5 max-w-md text-base leading-relaxed text-white/45">
-                Available for commercial campaigns, UGC batches, and long-form
-                cinematic projects. Share your brief and timeline — I&apos;ll respond
-                within 24 hours.
+                {contact.description}
               </p>
 
               <div className="mt-10 space-y-4">

@@ -1,19 +1,25 @@
+import { DEFAULT_SECTIONS, type SiteSections } from "@/lib/content-types";
 import { tools } from "@/data/site";
 
-export function TechnicalArsenal() {
+type TechnicalArsenalProps = {
+  sections?: SiteSections;
+};
+
+export function TechnicalArsenal({ sections = DEFAULT_SECTIONS }: TechnicalArsenalProps) {
+  const { tools: toolsSection } = sections;
+
   return (
     <section id="tools" className="scroll-mt-24 px-6 py-24 lg:px-8 lg:py-32">
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 max-w-2xl">
           <p className="mb-4 text-[11px] tracking-[0.35em] text-white/35 uppercase">
-            Technical Arsenal
+            {toolsSection.eyebrow}
           </p>
           <h2 className="text-3xl font-light tracking-tight text-white sm:text-5xl">
-            Tools & Advanced Pipelines
+            {toolsSection.heading}
           </h2>
           <p className="mt-5 text-base leading-relaxed text-white/45">
-            From traditional post-production to generative AI workflows — built for
-            commercial speed without sacrificing cinematic quality.
+            {toolsSection.description}
           </p>
         </div>
 
